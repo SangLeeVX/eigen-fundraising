@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eigen Bio · Fundraising Intelligence</title>
+<style>
+:root {
+  --bg:#08080e;--s1:#0f0f18;--s2:#16161f;--s3:#1e1e2a;--s4:#252535;
+  --border:#2a2a3d;--border2:#333348;
+  --accent:#7c6dfa;--accent2:#00d4aa;
+  --red:#ff4757;--orange:#ff8c00;--yellow:#ffd32a;--green:#2ed573;
+  --blue:#4dabf7;--purple:#cc5de8;
+  --text:#eeeef5;--t2:#9898b8;--t3:#55556a;--t4:#3a3a50;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;display:flex;flex-direction:column}
+
+/* TOP NAV */
+.topnav{display:flex;align-items:center;padding:0 20px;height:52px;background:var(--s1);border-bottom:1px solid var(--border);gap:16px;flex-shrink:0}
+.logo{font-size:13px;font-weight:800;letter-spacing:2px;color:var(--accent);white-space:nowrap}
+.logo span{color:var(--t2);font-weight:400}
+.nav-tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--t2);transition:all .15s;border:1px solid transparent;white-space:nowrap}
+.nav-tab:hover{color:var(--text);background:var(--s3)}
+.nav-tab.active{color:var(--accent);background:rgba(124,109,250,.12);border-color:rgba(124,109,250,.25)}
+.topnav-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.round-badge{padding:4px 10px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.3);border-radius:20px;font-size:11px;font-weight:700;color:var(--accent2);letter-spacing:.5px}
+.days-badge{padding:4px 10px;background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.25);border-radius:20px;font-size:11px;font-weight:700;color:var(--orange)}
+.btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--s3);color:var(--t2);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn:hover{color:var(--text);border-color:var(--accent)}
+.btn-accent{background:rgba(124,109,250,.15);border-color:rgba(124,109,250,.4);color:var(--accent)}
+.btn-accent:hover{background:rgba(124,109,250,.25)}
+
+/* LAYOUT */
+.workspace{display:flex;flex:1;overflow:hidden}
+.main-scroll{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:7px}
+.stat-val{font-size:24px;font-weight:800;line-height:1}
+.stat-sub{font-size:11px;color:var(--t3);margin-top:4px}
+.stat-trend{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:5px}
+.stat-trend.up{background:rgba(46,213,115,.12);color:var(--green)}
+.stat-trend.down{background:rgba(255,71,87,.12);color:var(--red)}
+.stat-trend.neutral{background:rgba(255,140,0,.12);color:var(--orange)}
+
+/* ACTION STRIP */
+.action-strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.action-col{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.action-col-title{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.dot-red{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);flex-shrink:0}
+.dot-orange{width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 6px var(--orange);flex-shrink:0}
+.dot-green{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.action-item{display:flex;gap:10px;padding:8px 9px;border-radius:7px;cursor:pointer;transition:background .15s;margin-bottom:3px;align-items:flex-start}
+.action-item:hover{background:var(--s3)}
+.action-text{font-size:12px;color:var(--t2);line-height:1.4}
+.action-text strong{color:var(--text);display:block;margin-bottom:2px;font-size:12px}
+.action-due{font-size:10px;color:var(--t3);margin-top:2px}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+
+/* CARDS */
+.card{background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+.card-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-title{font-size:13px;font-weight:700;flex:1}
+.card-body{padding:14px}
+.card-tag{font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:4px}
+.card-tag.live{background:rgba(46,213,115,.12);color:var(--green)}
+.card-tag.hot{background:rgba(255,71,87,.12);color:var(--red)}
+.card-tag.new{background:rgba(77,171,247,.12);color:var(--blue)}
+.card-tag.warn{background:rgba(255,140,0,.12);color:var(--orange)}
+
+/* PIPELINE VIZ */
+.pipeline-viz{display:flex;gap:0;margin-bottom:6px;border-radius:8px;overflow:hidden;height:44px}
+.pipe-seg{display:flex;flex-direction:column;justify-content:center;align-items:center;transition:all .2s;cursor:default;position:relative}
+.pipe-seg:not(:last-child)::after{content:'▶';position:absolute;right:-6px;color:var(--bg);font-size:10px;z-index:2}
+.pipe-seg-name{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.75}
+.pipe-seg-n{font-size:15px;font-weight:800}
+
+/* EXPAND CARDS */
+.expand-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.expand-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background .15s}
+.expand-head:hover{background:var(--s3)}
+.expand-arrow{font-size:10px;color:var(--t3);transition:transform .2s;flex-shrink:0}
+.expand-head.open .expand-arrow{transform:rotate(90deg)}
+.expand-body{display:none;padding:12px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--t2);line-height:1.6}
+.expand-body.open{display:block}
+.expand-title{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.expand-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700}
+
+/* INTEL CARDS */
+.intel-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.intel-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .15s}
+.intel-head:hover{background:var(--s3)}
+.intel-icon{font-size:18px}
+.intel-title{font-size:12px;font-weight:700;flex:1}
+.intel-sub{font-size:11px;color:var(--t3)}
+.intel-body{display:none;padding:12px 14px;border-top:1px solid var(--border)}
+.intel-body.open{display:block}
+
+/* KANBAN */
+.kanban-wrap{overflow-x:auto;padding-bottom:12px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.kanban-wrap::-webkit-scrollbar{height:6px}
+.kanban-wrap::-webkit-scrollbar-track{background:transparent}
+.kanban-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.kanban-board{display:flex;gap:10px;min-width:max-content;padding:4px 2px}
+.kanban-col{width:190px;flex-shrink:0}
+.kanban-col-head{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:7px 7px 0 0;margin-bottom:6px}
+.kanban-col-label{font-size:11px;font-weight:700;flex:1}
+.kanban-col-count{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.08)}
+.kanban-card{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:10px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.kanban-card:hover{border-color:var(--border2);background:var(--s3)}
+.kanban-card.expanded{border-color:var(--accent);background:var(--s3)}
+.kc-name{font-size:12px;font-weight:700;margin-bottom:3px}
+.kc-firm{font-size:11px;color:var(--t2);margin-bottom:6px}
+.kc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.kc-tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.3px}
+.kc-detail{display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--t2);line-height:1.5}
+.kc-detail.open{display:block}
+.kc-detail-row{display:flex;gap:6px;margin-bottom:4px}
+.kc-detail-label{color:var(--t3);min-width:60px}
+.outcome-col{opacity:.6}
+.outcome-col .kanban-card{border-style:dashed}
+
+/* CALENDAR */
+.cal-controls{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.cal-month{font-size:16px;font-weight:800}
+.cal-event{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.cal-event-head{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background .15s}
+.cal-event-head:hover{background:var(--s3)}
+.cal-date-block{text-align:center;min-width:44px}
+.cal-date-day{font-size:20px;font-weight:800;line-height:1}
+.cal-date-dow{font-size:10px;color:var(--t3);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.cal-event-info{flex:1}
+.cal-event-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.cal-event-sub{font-size:11px;color:var(--t2)}
+.cal-event-body{display:none;padding:12px 14px;border-top:1px solid var(--border)}
+.cal-event-body.open{display:block}
+.briefing-output{margin-top:10px;padding:12px;background:var(--s3);border-radius:6px;font-size:12px;line-height:1.6;color:var(--t2);white-space:pre-wrap;max-height:320px;overflow-y:auto}
+.type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.type-investor{background:rgba(124,109,250,.15);color:var(--accent)}
+.type-clinical{background:rgba(0,212,170,.15);color:var(--accent2)}
+.type-internal{background:rgba(77,171,247,.12);color:var(--blue)}
+.type-conference{background:rgba(255,140,0,.12);color:var(--orange)}
+
+/* TARGETS */
+.target-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.target-row:last-child{border-bottom:none}
+.target-name{font-size:12px;font-weight:700;flex:1}
+.target-focus{font-size:11px;color:var(--t2);flex:1.5}
+.target-check{font-size:12px}
+
+/* NARRATIVE */
+.narrative-section{margin-bottom:24px}
+.narrative-section h3{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.narrative-section p,.narrative-section li{font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:8px}
+.narrative-section ul{padding-left:18px}
+.narrative-section li{margin-bottom:4px}
+.highlight{color:var(--text);font-weight:600}
+.metric-pill{display:inline-block;padding:2px 8px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.25);border-radius:4px;font-size:12px;font-weight:700;color:var(--accent2);margin:0 2px}
+
+/* MEETINGS */
+.meeting-entry{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.meeting-head{padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s}
+.meeting-head:hover{background:var(--s3)}
+.meeting-date{font-size:11px;color:var(--t3);min-width:80px}
+.meeting-title{font-size:13px;font-weight:700;flex:1}
+.meeting-body{display:none;padding:12px 14px;border-top:1px solid var(--border)}
+.meeting-body.open{display:block}
+.meeting-note{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px}
+.meeting-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;margin-top:10px}
+
+/* DATA ROOM */
+.doc-row{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.doc-row.stale{border-color:rgba(255,71,87,.4)}
+.doc-row.needs-review{border-color:rgba(255,140,0,.35)}
+.doc-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.doc-name{font-size:13px;font-weight:700;flex:1}
+.doc-ver{font-size:11px;color:var(--t3)}
+.doc-meta{font-size:11px;color:var(--t2);margin-bottom:6px}
+.doc-warn{font-size:11px;color:var(--orange);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.doc-warn.red{color:var(--red)}
+.doc-actions{display:flex;gap:6px}
+.doc-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:var(--s3);color:var(--t2);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.doc-btn:hover{color:var(--text);border-color:var(--accent)}
+.doc-btn.green{border-color:rgba(46,213,115,.4);color:var(--green)}
+.doc-btn.green:hover{background:rgba(46,213,115,.1)}
+
+/* FAQ */
+.faq-item{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.faq-q{padding:12px 14px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;transition:background .15s}
+.faq-q:hover{background:var(--s3)}
+.faq-q .arrow{font-size:10px;color:var(--t3);transition:transform .2s;margin-left:auto}
+.faq-q.open .arrow{transform:rotate(90deg)}
+.faq-a{display:none;padding:10px 14px 12px;border-top:1px solid var(--border);font-size:12px;color:var(--t2);line-height:1.7}
+.faq-a.open{display:block}
+.faq-actions{display:flex;justify-content:flex-end;margin-top:8px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:24px;width:420px;max-width:90vw}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.modal p{font-size:12px;color:var(--t2);margin-bottom:16px}
+.modal input{width:100%;padding:10px 12px;background:var(--s3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:13px;outline:none;margin-bottom:12px}
+.modal input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--s3);border:1px solid var(--accent);border-radius:8px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--accent);z-index:2000;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* LOADING */
+.loading{display:inline-block;width:12px;height:12px;border:2px solid rgba(124,109,250,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MISC */
+.section-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.tag.hot{background:rgba(255,71,87,.12);color:var(--red)}
+.tag.warm{background:rgba(255,140,0,.12);color:var(--orange)}
+.tag.cold{background:rgba(77,171,247,.08);color:var(--t2)}
+.tag.closed{background:rgba(46,213,115,.12);color:var(--green)}
+.tag.passed{background:rgba(85,85,106,.2);color:var(--t3)}
+.tag.sit{background:rgba(124,109,250,.1);color:var(--accent)}
+hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+small{font-size:11px;color:var(--t3)}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="logo">EIGEN<span>BIO</span></div>
+  <div class="nav-tabs" id="navTabs">
+    <div class="nav-tab active" data-page="warroom">⚡ War Room</div>
+    <div class="nav-tab" data-page="pipeline">💼 Pipeline</div>
+    <div class="nav-tab" data-page="calendar">📅 Calendar</div>
+    <div class="nav-tab" data-page="targets">🎯 Targets</div>
+    <div class="nav-tab" data-page="narrative">📜 Narrative</div>
+    <div class="nav-tab" data-page="meetings">📋 Meetings</div>
+    <div class="nav-tab" data-page="dataroom">🗄 Data Room</div>
+    <div class="nav-tab" data-page="faq">❓ FAQ</div>
+  </div>
+  <div class="topnav-right">
+    <div class="round-badge">Pre-Seed</div>
+    <div class="days-badge" id="daysBadge">Loading...</div>
+    <button class="btn" id="settingsBtn">⚙ Settings</button>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+<div class="main-scroll">
+
+<!-- ==================== WAR ROOM ==================== -->
+<div class="page active" id="page-warroom">
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">Target Raise</div>
+      <div class="stat-val" style="color:var(--accent2)">$3M</div>
+      <div class="stat-sub">Pre-Seed SAFE</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Committed</div>
+      <div class="stat-val" style="color:var(--green)">$0</div>
+      <div class="stat-sub">0 closed</div>
+      <div class="stat-trend neutral">In Progress</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Active Conversations</div>
+      <div class="stat-val">32</div>
+      <div class="stat-sub">Across 8 stages</div>
+      <div class="stat-trend up">↑ Active</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Partner-Level</div>
+      <div class="stat-val" style="color:var(--red)">3</div>
+      <div class="stat-sub">MSD, Hopp, Crockell</div>
+      <div class="stat-trend up">↑ Hot</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Next Catalyst</div>
+      <div class="stat-val" style="font-size:14px;color:var(--yellow)">Apr 7</div>
+      <div class="stat-sub">Andrew + Peter Zhou</div>
+    </div>
+  </div>
+
+  <!-- Action Strip -->
+  <div class="action-strip">
+    <div class="action-col">
+      <div class="action-col-title"><span class="dot-red"></span><span style="color:var(--red)">IMMEDIATE — This Week</span></div>
+      <div class="action-item">
+        <span class="dot-red"></span>
+        <div class="action-text">
+          <strong>Prep for Apr 7: Peter Zhou (Triatomic Capital)</strong>
+          Research Triatomic's portfolio — biotech/diagnostics focus. Lead with Vyloy FDA approval as market catalyst.
+          <div class="action-due">📅 Apr 7 · 16:00 PDT</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <span class="dot-red"></span>
+        <div class="action-text">
+          <strong>Identify Andrew Sundstrom — research before call</strong>
+          Self-listed as "Self" in Calendly. Unknown background. Use DeepSeek briefing before the call.
+          <div class="action-due">📅 Apr 7 · 09:00 KST</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <span class="dot-red"></span>
+        <div class="action-text">
+          <strong>Commission IP/FTO Analysis — critical gap</strong>
+          Every serious investor will ask. Not yet commissioned. Budget ~$8-15K. Blocking factor for DD.
+          <div class="action-due">🔴 Blocking — do this week</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <span class="dot-red"></span>
+        <div class="action-text">
+          <strong>Follow up: MSD Capital, Hopp Family, Crockell</strong>
+          All at Partner Mtg stage. No update in >7 days triggers a check-in.
+          <div class="action-due">⏰ Status check overdue</div>
+        </div>
+      </div>
+    </div>
+    <div class="action-col">
+      <div class="action-col-title"><span class="dot-orange"></span><span style="color:var(--orange)">THIS WEEK — Before AACR</span></div>
+      <div class="action-item">
+        <span class="dot-orange"></span>
+        <div class="action-text">
+          <strong>Prep MD Anderson / Van Morris KOL meeting (Apr 8)</strong>
+          Clinical validation site opportunity. Frame as de-risking investor story, not just clinical partnership.
+          <div class="action-due">📅 Apr 8 · 07:00 PDT</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <span class="dot-orange"></span>
+        <div class="action-text">
+          <strong>Build AACR networking list (Apr 17–22)</strong>
+          Identify biotech investors, KOLs at conference. Tempus reception Apr 20 (competitive intel). Book 1:1s in advance.
+          <div class="action-due">📅 12 days out — plan now</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <span class="dot-orange"></span>
+        <div class="action-text">
+          <strong>Push Dimension Capital to next stage</strong>
+          Marked "hot / stay-in-touch." Re-engage with a specific ask — what would move them to intro call?
+          <div class="action-due">🔥 Highest-probability stay-in-touch</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <span class="dot-green"></span>
+        <div class="action-text">
+          <strong>Update pitch deck: add regulatory strategy slide</strong>
+          LDT vs CDx PMA pathway. Investors increasingly asking. Keep it to one slide — show you've thought it through.
+          <div class="action-due">📝 Deadline: before next partner mtg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline Funnel + Next Steps -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Pipeline Funnel</span><span class="card-tag live">Live</span></div>
+      <div class="card-body">
+        <div class="pipeline-viz" id="pipelineViz"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--t3)" id="pipeLegend"></div>
+        <hr class="divider">
+        <div style="display:flex;gap:16px;font-size:12px;color:var(--t2)">
+          <span><span style="color:var(--text);font-weight:700">3</span> at Partner-Mtg stage</span>
+          <span><span style="color:var(--text);font-weight:700">4</span> in DD</span>
+          <span><span style="color:var(--text);font-weight:700" id="totalInvestors">—</span> total tracked</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Recommended Next Steps</span></div>
+      <div class="card-body" style="font-size:12px;color:var(--t2);line-height:1.7">
+        <div style="margin-bottom:8px"><span style="color:var(--red);font-weight:700">1.</span> Close the IP/FTO gap before any more DD conversations. It will block you.</div>
+        <div style="margin-bottom:8px"><span style="color:var(--orange);font-weight:700">2.</span> Convert AACR into signed NDAs / intro calls with 3+ investors. Pre-schedule 1:1s now.</div>
+        <div style="margin-bottom:8px"><span style="color:var(--yellow);font-weight:700">3.</span> Turn Van Morris (MD Anderson) into a formal validation site — this is your most credible de-risking signal for investors.</div>
+        <div style="margin-bottom:8px"><span style="color:var(--accent2);font-weight:700">4.</span> Re-engage Dimension Capital with a specific, time-bounded ask. "Hot / SIT" means they're not gone — they need a reason to move.</div>
+        <div><span style="color:var(--blue);font-weight:700">5.</span> For Khosla, Casdin, Northpond: Sonnet-generate a personalized "state of the science" email with the concordance data as the hook. No pitch, just insight.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Market Timing Intelligence -->
+  <div class="section-title">Market Timing Intelligence</div>
+  <div class="grid-3">
+    <div class="intel-card">
+      <div class="intel-head" onclick="toggleIntel(this)">
+        <span class="intel-icon">💊</span>
+        <div><div class="intel-title">Zolbetuximab (Vyloy) FDA Approved</div><div class="intel-sub">Oct 2024 — immediate market created</div></div>
+        <span class="expand-arrow">▶</span>
+      </div>
+      <div class="intel-body">
+        <p style="font-size:12px;color:var(--t2);line-height:1.6">Zolbetuximab became the first CLDN18.2-targeting therapy approved by FDA (Oct 2024) for gastric/GEJ adenocarcinoma. Every patient eligible for this drug requires companion diagnostic testing. That's an existing, growing clinical need — not a future one. AstraZeneca's MATTERHORN trial results in 2025 are expected to expand the eligible population further.</p>
+        <p style="font-size:11px;color:var(--accent2);margin-top:8px;font-weight:600">→ Lead with this in every investor conversation. It converts regulatory risk into market pull.</p>
+      </div>
+    </div>
+    <div class="intel-card">
+      <div class="intel-head" onclick="toggleIntel(this)">
+        <span class="intel-icon">🔬</span>
+        <div><div class="intel-title">Liquid Biopsy CDx Market Timing</div><div class="intel-sub">$4.5B+ by 2028, 23% CAGR</div></div>
+        <span class="expand-arrow">▶</span>
+      </div>
+      <div class="intel-body">
+        <p style="font-size:12px;color:var(--t2);line-height:1.6">Liquid biopsy companion diagnostics are the next frontier after tissue-based IHC. Foundation Medicine, Guardant, and Biodesix have proven the commercial model. The gap: none have a validated CLDN18.2 liquid biopsy CDx. The tissue-based IHC (standard of care) requires invasive biopsy, fails on heterogeneous tumors, and can't monitor treatment response. Liquid biopsy solves all three.</p>
+        <p style="font-size:11px;color:var(--accent2);margin-top:8px;font-weight:600">→ Eigen Bio is not entering a crowded market. It's entering a market that doesn't have a winner yet.</p>
+      </div>
+    </div>
+    <div class="intel-card">
+      <div class="intel-head" onclick="toggleIntel(this)">
+        <span class="intel-icon">🌏</span>
+        <div><div class="intel-title">Korea / APAC — Asymmetric Advantage</div><div class="intel-sub">Gastric cancer #1 in Korea; KSE network</div></div>
+        <span class="expand-arrow">▶</span>
+      </div>
+      <div class="intel-body">
+        <p style="font-size:12px;color:var(--t2);line-height:1.6">Korea has the highest gastric cancer incidence globally. MFDS regulatory pathway is faster than FDA for companion diagnostics with Korean-origin data. KSE network provides direct access to KAIST, Yonsei, SNU clinical collaborators. Samsung Medical, Asan Medical, Severance Hospital are all accessible validation sites.</p>
+        <p style="font-size:11px;color:var(--accent2);margin-top:8px;font-weight:600">→ Sang's Korean background is a structural advantage, not just a nice story. It's a faster path to clinical validation data.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risks + Opportunities -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Key Risks</span><span class="card-tag hot">Click to expand</span></div>
+      <div class="card-body" style="padding:10px">
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(255,71,87,.12);color:var(--red)">HIGH</span>
+            <span class="expand-title">IP/FTO not yet commissioned</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">Every institutional investor in diagnostics will ask about freedom-to-operate. "Not yet commissioned" is a red flag that signals lack of preparation. Budget $8–15K for a preliminary FTO analysis. This is not optional.</div>
+        </div>
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(255,71,87,.12);color:var(--red)">HIGH</span>
+            <span class="expand-title">n=10 concordance data — small sample</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">The Anal. Chem. 2021 data (100% concordance, n=10) is peer-reviewed but statistically underpowered for a clinical claim. Investors will probe this. Prepare a clear answer: the data is proof-of-concept, the pre-seed capital expands n to 50+, and the AACR conference is the venue for presenting expanded results.</div>
+        </div>
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(255,140,0,.12);color:var(--orange)">MED</span>
+            <span class="expand-title">No clear regulatory pathway documented</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">LDT (Lab Developed Test) vs. CDx (PMA pathway) is a real strategic fork. The regulatory memo is in draft. Investors at DD stage will ask for this. Resolve it before the next partner-level meeting. Preferred answer: LDT first for revenue/validation, CDx IVD PMA in parallel if partnering with pharma.</div>
+        </div>
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(255,140,0,.12);color:var(--orange)">MED</span>
+            <span class="expand-title">Solo founder — execution risk perception</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">Institutional investors prefer founding teams. Address proactively: identify a co-founder or clinical lead advisor who can function as the scientific co-founder narrative. MD Anderson's Van Morris is a candidate for advisory board credibility.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Key Opportunities</span><span class="card-tag new">Click to expand</span></div>
+      <div class="card-body" style="padding:10px">
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(46,213,115,.12);color:var(--green)">NOW</span>
+            <span class="expand-title">AACR 2026 — prime networking moment</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">AACR Apr 17–22 in San Diego is the single best week to meet biotech investors, KOLs, and pharma BD in oncology diagnostics. Pre-book 1:1s with every investor already in the pipeline. Tempus reception Apr 20 (USS Midway) is worth attending for competitive intel. AZ clinical translation track has direct relevance to CLDN18.2 therapeutic expansion.</div>
+        </div>
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(46,213,115,.12);color:var(--green)">NOW</span>
+            <span class="expand-title">MD Anderson validation — investor de-risking</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">Van Morris (Apr 8) is a GI oncology KOL at MD Anderson. If he becomes a formal validation site collaborator, every investor conversation changes. "MD Anderson-validated" is not just clinical credibility — it's a signal that de-risks the entire clinical story. Prioritize converting this meeting into a formal collaboration agreement.</div>
+        </div>
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(124,109,250,.12);color:var(--accent)">STRATEGIC</span>
+            <span class="expand-title">Pharma CDx co-development — AZ, Astellas</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">AstraZeneca (MATTERHORN CLDN18.2 ADC) and Astellas (Vyloy commercial rights) both need validated CDx partners. A pharma co-development deal at the pre-seed stage would be transformative — non-dilutive funding, clinical validation, and credibility. Position the pre-seed round as the capital to generate enough clinical data to initiate a pharma conversation.</div>
+        </div>
+        <div class="expand-card">
+          <div class="expand-head" onclick="toggleExpand(this)">
+            <span class="expand-badge" style="background:rgba(77,171,247,.12);color:var(--blue)">GROWING</span>
+            <span class="expand-title">Dimension Capital — re-engagement window</span>
+            <span class="expand-arrow">▶</span>
+          </div>
+          <div class="expand-body">Dimension Capital is the highest-priority "stay-in-touch." Marked "hot." The window to re-engage is before AACR — reach out with the MD Anderson meeting update as the hook. Investors who are warm but waiting respond to specific proof points arriving on a timeline. Give them a reason to move now.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end warroom -->
+
+<!-- ==================== PIPELINE ==================== -->
+<div class="page" id="page-pipeline">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div style="font-size:16px;font-weight:800">Investor Pipeline</div>
+    <span class="card-tag live">Live</span>
+    <span style="margin-left:auto;font-size:12px;color:var(--t2)" id="pipelineCount"></span>
+  </div>
+  <div class="kanban-wrap">
+    <div class="kanban-board" id="kanbanBoard"></div>
+  </div>
+</div>
+
+<!-- ==================== CALENDAR ==================== -->
+<div class="page" id="page-calendar">
+  <div class="cal-controls">
+    <div class="cal-month">April 2026</div>
+    <button class="btn" onclick="syncCalendar()">🔄 Sync Calendar</button>
+    <span style="font-size:11px;color:var(--t3);margin-left:8px">Last synced: just now</span>
+  </div>
+  <div id="calendarList"></div>
+</div>
+
+<!-- ==================== TARGETS ==================== -->
+<div class="page" id="page-targets">
+  <div style="margin-bottom:16px">
+    <div style="font-size:16px;font-weight:800;margin-bottom:4px">Target Investors</div>
+    <div style="font-size:12px;color:var(--t2)">All firms in active outreach or research phase. Pipeline view in 💼 Pipeline tab.</div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Partner-Level (Highest Priority)</span><span class="card-tag hot">3 active</span></div>
+    <div class="card-body" style="padding:8px 14px">
+      <div class="target-row"><span class="dot-red" style="flex-shrink:0;margin-top:3px"></span><span class="target-name">MSD Capital</span><span class="target-focus">Family office, healthcare focus. Warm intro via network.</span><span class="tag hot">Partner Mtg</span></div>
+      <div class="target-row"><span class="dot-red" style="flex-shrink:0;margin-top:3px"></span><span class="target-name">Hopp Family Office</span><span class="target-focus">Dietmar Hopp / SAP founder family office, biotech focus.</span><span class="tag hot">Partner Mtg</span></div>
+      <div class="target-row"><span class="dot-red" style="flex-shrink:0;margin-top:3px"></span><span class="target-name">Crockell</span><span class="target-focus">Healthcare-focused family office. Advanced conversations.</span><span class="tag hot">Partner Mtg</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Due Diligence Stage</span><span class="card-tag warn">4 active</span></div>
+    <div class="card-body" style="padding:8px 14px">
+      <div class="target-row"><span class="target-name">Caris Life Sciences</span><span class="target-focus">Molecular intelligence company. Potential strategic partner + investor.</span><span class="tag warm">DD</span></div>
+      <div class="target-row"><span class="target-name">Mulligan Bio</span><span class="target-focus">Early biotech investor, molecular diagnostics expertise.</span><span class="tag warm">DD</span></div>
+      <div class="target-row"><span class="target-name">Portage Ventures</span><span class="target-focus">Toronto-based healthcare VC. Diagnostics + liquid biopsy focus.</span><span class="tag warm">DD</span></div>
+      <div class="target-row"><span class="target-name">Brennikmeijer</span><span class="target-focus">European family office with healthcare allocation.</span><span class="tag warm">DD</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Meeting Stage</span><span class="card-tag new">10 active</span></div>
+    <div class="card-body" style="padding:8px 14px">
+      <div class="target-row"><span class="target-name">Khosla Ventures</span><span class="target-focus">Bio/deep tech, Vinod Khosla. Pre-seed diagnostics precedent.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Pear VC</span><span class="target-focus">Early-stage, Stanford-affiliated. Life sciences track.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Casdin Capital</span><span class="target-focus">Biotech hedge + private. Diagnostics portfolio includes Guardant.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Bold Capital</span><span class="target-focus">Moonshots, Peter Diamandis-linked. Health extension focus.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Northpond Ventures</span><span class="target-focus">Science-based VC. Molecular diagnostics portfolio.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Nucleus Capital</span><span class="target-focus">Healthcare-focused early stage.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Triatomic Capital</span><span class="target-focus">Peter Zhou (pz@triatomic.ai). AI-driven biotech focus.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Moonfire</span><span class="target-focus">European early stage, founder-friendly.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Marvelous</span><span class="target-focus">Healthcare innovation fund.</span><span class="tag warm">Meeting</span></div>
+      <div class="target-row"><span class="target-name">Bioventures</span><span class="target-focus">Biotech seed specialist.</span><span class="tag warm">Meeting</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Intro Stage</span></div>
+    <div class="card-body" style="padding:8px 14px">
+      <div class="target-row"><span class="target-name">Atlas Venture</span><span class="target-focus">Biotech company-creation model. Seed + Series A.</span><span class="tag cold">Intro</span></div>
+      <div class="target-row"><span class="target-name">Novo Holdings</span><span class="target-focus">Novo Nordisk Foundation. Global health + biotech.</span><span class="tag cold">Intro</span></div>
+      <div class="target-row"><span class="target-name">F-Prime Capital</span><span class="target-focus">Fidelity-affiliated biotech VC.</span><span class="tag cold">Intro</span></div>
+      <div class="target-row"><span class="target-name">8VC</span><span class="target-focus">Joe Lonsdale-led, healthcare + defense tech.</span><span class="tag cold">Intro</span></div>
+      <div class="target-row"><span class="target-name">Servier Ventures</span><span class="target-focus">Corporate VC, oncology focus. France-based.</span><span class="tag cold">Intro</span></div>
+      <div class="target-row"><span class="target-name">AIX Ventures</span><span class="target-focus">AI + healthcare early stage.</span><span class="tag cold">Intro</span></div>
+      <div class="target-row"><span class="target-name">VenRock</span><span class="target-focus">Legacy healthcare VC. Diagnostics experience.</span><span class="tag cold">Intro</span></div>
+      <div class="target-row"><span class="target-name">Mayfield Fund</span><span class="target-focus">Palo Alto-based generalist + bio track.</span><span class="tag cold">Intro</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== NARRATIVE ==================== -->
+<div class="page" id="page-narrative">
+  <div style="max-width:720px">
+    <div class="narrative-section">
+      <h3>The One-Line Pitch</h3>
+      <p>Eigen Bio is building the first liquid biopsy companion diagnostic for CLDN18.2-positive gastric cancer — the exact biomarker that drives eligibility for <span class="highlight">Vyloy (zolbetuximab)</span>, FDA-approved October 2024 — with <span class="metric-pill">100% concordance</span> to tissue biopsy in peer-reviewed data.</p>
+    </div>
+    <div class="narrative-section">
+      <h3>Why Now</h3>
+      <p>The FDA approval of Vyloy in October 2024 created a <span class="highlight">mandatory companion diagnostic market that doesn't exist yet.</span> Every CLDN18.2+ gastric cancer patient eligible for Vyloy needs a diagnostic. The current standard — tissue IHC biopsy — is invasive, fails on tumor heterogeneity, and can't monitor treatment response. Liquid biopsy solves all three problems. No validated liquid biopsy CDx exists for CLDN18.2. Eigen Bio is building it.</p>
+    </div>
+    <div class="narrative-section">
+      <h3>The Data</h3>
+      <ul>
+        <li><span class="highlight">100% concordance</span> with tissue biopsy IHC (n=10)</li>
+        <li>Spearman correlation <span class="metric-pill">r=0.76</span> — published in <em>Analytical Chemistry</em>, 2021</li>
+        <li>Peer-reviewed. Not internal data — an academic journal that peer-reviews methodology.</li>
+        <li>Pre-seed capital expands n to 50+ with MD Anderson as validation site</li>
+      </ul>
+    </div>
+    <div class="narrative-section">
+      <h3>Market Size</h3>
+      <ul>
+        <li>~<span class="highlight">1 million new gastric cancer diagnoses</span> annually worldwide</li>
+        <li>~25–30% are CLDN18.2-positive — the Vyloy-eligible population</li>
+        <li>Liquid biopsy CDx market: <span class="metric-pill">$4.5B+ by 2028</span>, 23% CAGR</li>
+        <li>Korea alone: highest gastric cancer incidence globally — MFDS pathway faster than FDA</li>
+      </ul>
+    </div>
+    <div class="narrative-section">
+      <h3>Competitive Moat</h3>
+      <ul>
+        <li>First-mover advantage: no validated liquid biopsy CDx for CLDN18.2 exists</li>
+        <li>Peer-reviewed concordance data is a 2-year head start vs. anyone starting now</li>
+        <li>KSE network provides access to Korean clinical sites (highest gastric cancer incidence)</li>
+        <li>MD Anderson collaboration (in negotiation) as US validation site</li>
+        <li>IP filing in progress — targeting the novel assay methodology</li>
+      </ul>
+    </div>
+    <div class="narrative-section">
+      <h3>The Ask</h3>
+      <p>Raising <span class="metric-pill">$3M pre-seed SAFE</span>. Use of funds: expand clinical validation to n=50+ (MD Anderson), commission IP/FTO analysis, hire one clinical scientist, initiate MFDS pre-submission meeting in Korea. Milestone: validated assay data sufficient for pharma co-development conversation (AZ, Astellas) by Q4 2026.</p>
+    </div>
+    <div class="narrative-section">
+      <h3>Team</h3>
+      <p><span class="highlight">Sang Lee, CEO & Founder</span> — biophysics background, Korea Science and Engineering (KSE) network, direct access to Korean clinical sites. Deep expertise in CLDN18.2 biology and assay development methodology. Built the concordance data published in Anal. Chem. 2021.</p>
+      <p><span style="color:var(--orange);font-weight:600">Gap to address:</span> Scientific co-founder / clinical lead. Advisory board: targeting Van Morris MD (MD Anderson) + one Korean KOL.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MEETINGS ==================== -->
+<div class="page" id="page-meetings">
+  <div style="margin-bottom:16px">
+    <div style="font-size:16px;font-weight:800;margin-bottom:4px">Meeting Notes</div>
+    <div style="font-size:12px;color:var(--t2)">Click any meeting to expand notes. Most recent first.</div>
+  </div>
+  <div id="meetingsList"></div>
+</div>
+
+<!-- ==================== DATA ROOM ==================== -->
+<div class="page" id="page-dataroom">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div style="font-size:16px;font-weight:800">Data Room</div>
+    <span class="card-tag warn">Staleness detection active</span>
+  </div>
+  <div style="font-size:12px;color:var(--t2);margin-bottom:16px">Today: April 5, 2026. Items >30 days = needs review. Items >90 days = stale. Red items = critical gaps.</div>
+  <div id="dataRoomList"></div>
+</div>
+
+<!-- ==================== FAQ ==================== -->
+<div class="page" id="page-faq">
+  <div style="margin-bottom:16px">
+    <div style="font-size:16px;font-weight:800;margin-bottom:4px">Investor FAQ</div>
+    <div style="font-size:12px;color:var(--t2)">Click any question to expand. Use ✨ Refine Answer to rewrite with DeepSeek.</div>
+  </div>
+  <div id="faqList"></div>
+</div>
+
+</div><!-- end main-scroll -->
+</div><!-- end workspace -->
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>⚙ Settings</h3>
+    <p>Enter your DeepSeek API key to enable AI briefing generation. Key is stored only in your browser (localStorage).</p>
+    <input type="password" id="deepseekKeyInput" placeholder="sk-..." autocomplete="off">
+    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Get your key at platform.deepseek.com → API Keys</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveSettings()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const STATE_KEY = 'eigen_fc_v4';
+const DS_KEY = 'deepseek_api_key';
+const TODAY = new Date('2026-04-05');
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STATE_KEY)) || {}; } catch { return {}; }
+}
+function saveState(s) { localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
+let state = loadState();
+
+// ============================================================
+// STAGES
+// ============================================================
+const STAGES = [
+  { key:'research',    label:'Research',      color:'#7c6dfa' },
+  { key:'intro',       label:'Intro',         color:'#4dabf7' },
+  { key:'meeting',     label:'Meeting',       color:'#cc5de8' },
+  { key:'dd',          label:'Due Diligence', color:'#ffa502' },
+  { key:'partner-mtg', label:'Partner Mtg',   color:'#ff4757' },
+  { key:'term',        label:'Term Sheet',    color:'#00d4aa' },
+  { key:'negotiation', label:'Negotiating',   color:'#ffd32a' },
+  { key:'closed',      label:'Closed ✓',      color:'#2ed573' },
+];
+const OUTCOMES = ['passed','stay-in-touch'];
+
+// ============================================================
+// INVESTORS
+// ============================================================
+const INVESTORS = [
+  // Partner Mtg
+  { id:'i1', name:'MSD Capital', firm:'MSD Capital', stage:'partner-mtg', tier:1, focus:'Family office, healthcare, late-stage growth', notes:'Advanced conversations. Family office of Michael Dell. Healthcare allocation historically 15-20%.' },
+  { id:'i2', name:'Hopp Family Office', firm:'Hopp Family / Dietmar Hopp', stage:'partner-mtg', tier:1, focus:'SAP founder family office, biotech', notes:'European biotech heavy hitters. Dietmar Hopp sold SAP stake, deployed into biotech. Deeply technical.' },
+  { id:'i3', name:'Crockell', firm:'Crockell Capital', stage:'partner-mtg', tier:1, focus:'Healthcare family office', notes:'Advanced conversations. Specific interest in diagnostics.' },
+  // DD
+  { id:'i4', name:'Caris Life Sciences', firm:'Caris Life Sciences', stage:'dd', tier:2, focus:'Molecular intelligence, potential strategic investor', notes:'Could be both investor and commercial partner for CLDN18.2 CDx. Strategic relationship potential.' },
+  { id:'i5', name:'Mulligan Bio', firm:'Mulligan Bio', stage:'dd', tier:2, focus:'Molecular diagnostics, early biotech', notes:'Diagnostics focus. Likes early technical teams.' },
+  { id:'i6', name:'Portage Ventures', firm:'Portage Ventures', stage:'dd', tier:2, focus:'Toronto VC, diagnostics + liquid biopsy', notes:'Strong diagnostics thesis. Canadian healthcare network.' },
+  { id:'i7', name:'Brenninkmeijer', firm:'Brenninkmeijer Family', stage:'dd', tier:2, focus:'European family office, healthcare', notes:'C&A family office. European base. Healthcare allocation.' },
+  // Meeting
+  { id:'i8', name:'Khosla Ventures', firm:'Khosla Ventures', stage:'meeting', tier:1, focus:'Deep tech, bio, Vinod Khosla', notes:'Bold bets on hard science. Pre-seed in diagnostics precedent. Needs strong regulatory story.' },
+  { id:'i9', name:'Pear VC', firm:'Pear VC', stage:'meeting', tier:2, focus:'Early-stage, Stanford-affiliated', notes:'Life sciences track growing. Good for pre-seed with clinical data.' },
+  { id:'i10', name:'Casdin Capital', firm:'Casdin Capital', stage:'meeting', tier:1, focus:'Biotech, diagnostics — Guardant portfolio', notes:'Eli Casdin knows diagnostics cold. Guardant investor. Will probe competitive landscape hard.' },
+  { id:'i11', name:'Bold Capital', firm:'Bold Capital Partners', stage:'meeting', tier:2, focus:'Moonshots, Peter Diamandis health extension', notes:'XPRIZE-adjacent. Health extension / longevity angle. Likes audacious framing.' },
+  { id:'i12', name:'Northpond Ventures', firm:'Northpond Ventures', stage:'meeting', tier:2, focus:'Science-based VC, molecular diagnostics', notes:'Technical investors. Will want to see assay methodology in detail.' },
+  { id:'i13', name:'Nucleus Capital', firm:'Nucleus Capital', stage:'meeting', tier:2, focus:'Healthcare early stage', notes:'Quiet fund, strong network.' },
+  { id:'i14', name:'Triatomic Capital', firm:'Triatomic Capital', stage:'meeting', tier:2, focus:'AI-driven biotech, Peter Zhou', notes:'Booked by Kristin. Meeting Apr 7. pz@triatomic.ai. AI + bio intersection.' },
+  { id:'i15', name:'Moonfire', firm:'Moonfire Ventures', stage:'meeting', tier:2, focus:'European early stage, founder-friendly', notes:'UK-based. Pre-seed to seed range. Founder-first approach.' },
+  { id:'i16', name:'Marvelous', firm:'Marvelous', stage:'meeting', tier:2, focus:'Healthcare innovation', notes:'Newer fund. Healthcare innovation mandate.' },
+  { id:'i17', name:'Bioventures', firm:'Bioventures', stage:'meeting', tier:2, focus:'Biotech seed specialist', notes:'Seed biotech specialist. Likes peer-reviewed data as foundation.' },
+  // Intro
+  { id:'i18', name:'Atlas Venture', firm:'Atlas Venture', stage:'intro', tier:1, focus:'Biotech company-creation model', notes:'Company-creation model means they want to co-build. Requires deeper relationship.' },
+  { id:'i19', name:'Novo Holdings', firm:'Novo Holdings', stage:'intro', tier:1, focus:'Novo Nordisk Foundation, global health', notes:'Foundation mandate. Social + commercial hybrid. Korean market fits.' },
+  { id:'i20', name:'F-Prime Capital', firm:'F-Prime Capital', stage:'intro', tier:2, focus:'Fidelity-affiliated biotech VC', notes:'Strong biotech track record. Fidelity backing = longer check-writing horizon.' },
+  { id:'i21', name:'8VC', firm:'8VC', stage:'intro', tier:2, focus:'Joe Lonsdale, healthcare + defense tech', notes:'Healthcare + technology intersection. Korean government/defense adjacency could be angle.' },
+  { id:'i22', name:'Servier Ventures', firm:'Servier Ventures', stage:'intro', tier:2, focus:'Corporate VC, oncology, France-based', notes:'Pharma corporate VC. Oncology focus. CDx co-development angle relevant.' },
+  { id:'i23', name:'AIX Ventures', firm:'AIX Ventures', stage:'intro', tier:2, focus:'AI + healthcare early stage', notes:'AI-native biotech. ML angle on CLDN18.2 data interpretation.' },
+  { id:'i24', name:'VenRock', firm:'VenRock', stage:'intro', tier:2, focus:'Legacy healthcare VC, diagnostics experience', notes:'Rockefeller + Intel legacy fund. Diagnostics portfolio historically.' },
+  { id:'i25', name:'Mayfield Fund', firm:'Mayfield Fund', stage:'intro', tier:2, focus:'Palo Alto generalist + bio track', notes:'Generalist with bio track. Founder-first culture.' },
+  // Stay-in-touch
+  { id:'i26', name:'Dimension Capital', firm:'Dimension Capital', stage:'stay-in-touch', tier:1, focus:'Growth biotech — HOT, re-engage now', notes:'Marked HOT. They passed but left the door open. Re-engage with MD Anderson news as hook. This is the highest-priority stay-in-touch.' },
+  { id:'i27', name:'ARCH Venture Partners', firm:'ARCH Venture Partners', stage:'stay-in-touch', tier:1, focus:'Deep science seed', notes:'Foundational science investors. Strong biotech exits. Need more data before they move.' },
+  { id:'i28', name:'Vivo Capital', firm:'Vivo Capital', stage:'stay-in-touch', tier:2, focus:'Asian-focused healthcare VC', notes:'Asian market focus is relevant. Korea APAC angle.' },
+  { id:'i29', name:'S32 Capital', firm:'S32 Capital', stage:'stay-in-touch', tier:2, focus:'Healthcare focused', notes:'Healthcare focus. Check-in when more clinical data available.' },
+  { id:'i30', name:'SROne', firm:'SROne (GSK)', stage:'stay-in-touch', tier:2, focus:'GSK corporate VC, pharma CDx angle', notes:'GSK corporate VC. CDx co-development conversation when data is stronger.' },
+  { id:'i31', name:'Apollo', firm:'Apollo', stage:'stay-in-touch', tier:2, focus:'Alt. credit, healthcare adjacency', notes:'Not traditional VC but healthcare debt/credit angle for later stage.' },
+  { id:'i32', name:'Wing VC', firm:'Wing VC', stage:'stay-in-touch', tier:2, focus:'Pre-seed, science-based', notes:'Early-stage science focus. Re-engage with expanded n data.' },
+  { id:'i33', name:'KdT Ventures', firm:'KdT Ventures', stage:'stay-in-touch', tier:2, focus:'Knowledge-driven therapeutics, diagnostics', notes:'Strong diagnostics thesis. Timing not right — re-engage Q3 with MD Anderson data.' },
+  // Research
+  { id:'i34', name:'GV', firm:'GV (Google Ventures)', stage:'research', tier:1, focus:'Google VC, life sciences track', notes:'Life sciences team is strong. AI + diagnostics angle. Intro via Google network.' },
+  { id:'i35', name:'OrbiMed', firm:'OrbiMed Advisors', stage:'research', tier:1, focus:'Pure-play healthcare VC/PE', notes:'Diagnostics portfolio. Larger check sizes. May be too late-stage for pre-seed.' },
+  { id:'i36', name:'Versant Ventures', firm:'Versant Ventures', stage:'research', tier:1, focus:'Biotech company creation', notes:'Deep biotech builder model. Strong in diagnostics historically.' },
+  { id:'i37', name:'Lilly Ventures', firm:'Eli Lilly Ventures', stage:'research', tier:2, focus:'Corporate VC, oncology CDx angle', notes:'Lilly oncology portfolio. CDx co-development could be strategic.' },
+  { id:'i38', name:'NEA', firm:'NEA', stage:'research', tier:1, focus:'Multi-stage, healthcare + tech', notes:'Large fund, early-stage healthcare track. Need warm intro.' },
+  // Passed
+  { id:'i39', name:'Andreessen Horowitz Bio', firm:'a16z Bio', stage:'passed', tier:1, focus:'Passed — bio fund', notes:'Passed at intro stage. Focus on platform plays, not single-indication CDx.' },
+  { id:'i40', name:'General Catalyst', firm:'General Catalyst', stage:'passed', tier:1, focus:'Passed — stage mismatch', notes:'Too early for their healthcare investment thesis.' },
+];
+
+// ============================================================
+// CALENDAR EVENTS
+// ============================================================
+const CALENDAR_EVENTS = [
+  { id:'ce1', date:'2026-04-07', time:'09:00 KST', title:'Andrew Sundstrom — Eigen Bio US Meeting', org:'Andrew Sundstrom', firm:'Unknown — Self-listed', type:'investor', briefing:'', reviewed:false, notes:'Via Calendly. Company listed as "Self". Unknown background — use DeepSeek to research and generate briefing.' },
+  { id:'ce2', date:'2026-04-07', time:'16:00 PDT', title:'Peter Zhou — Triatomic Capital', org:'Peter Zhou', firm:'Triatomic Capital', email:'pz@triatomic.ai', type:'investor', briefing:'', reviewed:false, notes:'Booked by Kristin. Already in pipeline at meeting stage. AI-driven biotech. Lead with concordance data + Vyloy market timing.' },
+  { id:'ce3', date:'2026-04-07', time:'21:00 Lisbon / recurring', title:'EigenBio Follow-up (Recurring)', org:'Internal + 8 attendees', firm:'Internal', type:'internal', briefing:'', reviewed:false, notes:'Weekly recurring. 8 attendees. Likely investor update call or team sync. Prepare a crisp update on pipeline progress.' },
+  { id:'ce4', date:'2026-04-08', time:'07:00 PDT', title:'Van Morris MD — MD Anderson Cancer Center', org:'Van Morris MD', firm:'MD Anderson', email:'vkmorris@mdanderson.org', type:'clinical', briefing:'', reviewed:false, notes:'GI oncology specialist at MD Anderson. KOL for gastric cancer. Clinical partnership + validation site opportunity. Not a financial investor but strategically critical — MD Anderson validation dramatically de-risks clinical story for investors. Objective: get a written LOI or MOU for validation site.' },
+  { id:'ce5', date:'2026-04-17', time:'All day', title:'AACR Annual Meeting 2026', org:'Multiple — San Diego', firm:'Conference', type:'conference', briefing:'', reviewed:false, notes:'April 17–22, San Diego Convention Center. AZ clinical translation track. MD Anderson relationships. Tempus hosting reception Apr 20 at USS Midway (competitive intel opportunity). Unlock 2026 on Apr 22 in SF — may need to depart SD early. Prime networking opportunity with biotech investors, KOLs, pharma BD.' },
+];
+
+// ============================================================
+// DOCUMENTS
+// ============================================================
+const DEFAULT_DOCS = [
+  { id:'d1', name:'Eigen Bio Pitch Deck v3', cat:'pitch', ver:'v3 — Mar 2026', url:'', status:'current', notes:'Main seed deck. 12 slides.', addedDate:'2026-03-15', lastReviewed:null },
+  { id:'d2', name:'Concordance Data — Anal. Chem. 2021', cat:'data', ver:'Published', url:'', status:'current', notes:'Peer-reviewed proof. 100% concordance, n=10, Spearman r=0.76.', addedDate:'2026-01-10', lastReviewed:null },
+  { id:'d3', name:'Financial Model — Pre-Seed', cat:'financial', ver:'v2 — Feb 2026', url:'', status:'current', notes:'3-year model, use of funds breakdown.', addedDate:'2026-02-20', lastReviewed:null },
+  { id:'d4', name:'IP / FTO Analysis', cat:'legal', ver:'PENDING', url:'', status:'draft', notes:'NOT YET COMMISSIONED — this is a critical gap. Investors will ask. Budget $8-15K for preliminary FTO.', addedDate:'2026-01-01', lastReviewed:null, criticalGap:true },
+  { id:'d5', name:'Cap Table', cat:'legal', ver:'Jan 2026', url:'', status:'current', notes:'Founder shares, SAFE holders.', addedDate:'2026-01-15', lastReviewed:null },
+  { id:'d6', name:'Regulatory Strategy Memo', cat:'data', ver:'Draft', url:'', status:'draft', notes:'LDT vs CDx PMA pathway comparison. Draft only.', addedDate:'2026-02-01', lastReviewed:null },
+  { id:'d7', name:'Korea / APAC Market Analysis', cat:'other', ver:'Internal', url:'', status:'draft', notes:'Gastric cancer incidence data, MFDS pathway, KOL map.', addedDate:'2026-01-20', lastReviewed:null },
+  { id:'d8', name:'Competitive Landscape', cat:'other', ver:'Feb 2026', url:'', status:'current', notes:'Foundation Medicine, Guardant, Biodesix, tissue IHC.', addedDate:'2026-02-10', lastReviewed:null },
+];
+
+// ============================================================
+// MEETINGS DATA
+// ============================================================
+const MEETINGS = [
+  { id:'m1', date:'2026-04-07', title:'Andrew Sundstrom — Pre-Call', investor:'Andrew Sundstrom', status:'upcoming', notes:'Background unknown. Self-listed on Calendly. Research before this call. Objectives: understand their background, assess fit, qualify as angel/family office/institutional.', action_items:['Research Andrew Sundstrom before call','Prepare 10-min overview','Ask: what draws them to diagnostics?'] },
+  { id:'m2', date:'2026-04-07', title:'Peter Zhou — Triatomic Capital', investor:'Peter Zhou', status:'upcoming', notes:'Booked by Kristin. Triatomic Capital is AI-driven biotech fund. Peter Zhou (pz@triatomic.ai). Lead with: Vyloy FDA approval creates mandatory CDx need. AI-readable liquid biopsy data angle relevant to their thesis.', action_items:['Send pre-meeting concordance data summary','Lead with market timing (Vyloy Oct 2024)','Ask about their check size and timeline'] },
+  { id:'m3', date:'2026-04-08', title:'Van Morris MD — MD Anderson', investor:'Van Morris MD (clinical, not investor)', status:'upcoming', notes:'GI oncology KOL. CLDN18.2 clinical expertise. Goal is to secure a formal validation site agreement. Offer: co-authorship on validation study, publication at ASCO/AACR 2027.', action_items:['Prepare assay data summary for clinical review','Draft LOI for validation site collaboration','Offer co-authorship + publication pathway'] },
+  { id:'m4', date:'2026-03-22', title:'Portage Ventures — DD Meeting', investor:'Portage Ventures', status:'completed', notes:'Strong interest. Asked about n size expansion plan and regulatory pathway (LDT vs CDx). Sent concordance paper post-meeting. Requested financial model.', action_items:['Send financial model — DONE','Follow up on regulatory strategy memo','Check in: have they reviewed?'] },
+  { id:'m5', date:'2026-03-15', title:'Northpond Ventures — Initial Meeting', investor:'Northpond Ventures', status:'completed', notes:'Technical investors, went deep on assay methodology. Positive on the science. Concern: who is the clinical operations lead? Solo founder risk flagged. Suggested building out advisory board before next conversation.', action_items:['Build advisory board — Van Morris + Korean KOL','Follow up with advisory board update'] },
+  { id:'m6', date:'2026-03-08', title:'Casdin Capital — Intro Call', investor:'Casdin Capital', status:'completed', notes:'Eli Casdin team. Asked about Guardant-adjacent differentiation. Key message: Guardant does not have CLDN18.2 liquid biopsy — this is an uncrowded space specifically for this biomarker. They requested a competitive landscape analysis.', action_items:['Send competitive landscape doc — DONE','Schedule follow-up call — PENDING'] },
+];
+
+// ============================================================
+// FAQ
+// ============================================================
+const FAQS = [
+  { id:'f1', q:'Why is liquid biopsy better than tissue IHC for CLDN18.2?', a:'Tissue IHC biopsy is invasive, fails on heterogeneous tumors (CLDN18.2 expression can vary across the tumor), and cannot monitor treatment response over time. Liquid biopsy is non-invasive, captures circulating tumor DNA/protein from the full tumor landscape, and can be repeated serially to track whether expression changes during treatment. For a biomarker that determines eligibility for an expensive targeted therapy (Vyloy), getting the test wrong has real clinical consequences.' },
+  { id:'f2', q:'How big is the sample size and is it statistically significant?', a:'The published data (Anal. Chem. 2021) is n=10 with 100% concordance and Spearman r=0.76. This is a proof-of-concept dataset — statistically underpowered for a clinical claim, but peer-reviewed methodology. The pre-seed capital specifically funds expansion to n=50+ with MD Anderson as the validation site. At n=50 with similar concordance, this becomes a clinically significant dataset. We are not claiming clinical validity yet — we are claiming proof-of-concept and using this capital to achieve clinical validity.' },
+  { id:'f3', q:'What is the regulatory pathway — LDT or PMA?', a:'The strategy is LDT (Laboratory Developed Test) first, CDx PMA in parallel. LDT allows faster to market without full FDA 510(k)/PMA review, generates real-world performance data, and creates revenue. Once we have pharma co-development interest (AZ, Astellas), we file the CDx PMA as a parallel track. The LDT/CDx distinction is a sequence, not a choice — both are in the plan.' },
+  { id:'f4', q:'What is your competitive moat against Foundation Medicine, Guardant, Biodesix?', a:'None of the big three have a validated liquid biopsy CDx for CLDN18.2. FMI and Guardant detect CLDN18.2 mutations for research but not as a validated companion diagnostic for Vyloy eligibility. We are not competing with their pan-cancer platforms — we are filling a specific, validated CDx gap that they have not moved on. First-mover advantage in a specific biomarker is defensible through IP (FTO analysis in progress), clinical partnerships, and speed to publication.' },
+  { id:'f5', q:'Who is the team and how do you address the solo founder concern?', a:'Sang Lee brings biophysics expertise, the core assay development background, and the Korean clinical network (KSE, KAIST, Yonsei access). The pre-seed capital funds hiring a clinical scientist and building the advisory board. Dr. Van Morris (MD Anderson, GI oncology) is in negotiation for advisory board. We are also identifying a Korean KOL co-investigator. By close of the pre-seed round, we expect a 2-person founding team plus 2-person advisory board.' },
+  { id:'f6', q:'What is the go-to-market strategy?', a:'Phase 1 (pre-seed): Clinical validation with MD Anderson, n=50+. Phase 2 (seed): LDT commercial launch in Korea (MFDS, faster pathway), partnering with Samsung Medical / Asan Medical for Korean rollout. Phase 3 (Series A): US commercial launch as LDT, initiate CDx PMA with pharma co-development partner (AZ or Astellas). Revenue model: per-test fee ($300–500 per test in Korea, $800–1200 in US), potential royalty from pharma CDx co-development.' },
+  { id:'f7', q:'What is the IP situation?', a:'IP/FTO analysis is in planning stage — not yet commissioned. This is a known gap and is the first use of funds after closing the pre-seed. The novel assay methodology (specific to CLDN18.2 liquid biopsy quantification) is the primary IP target. Freedom-to-operate analysis will cover existing CLDN18.2 patents (Astellas holds key therapeutic patents, but assay methodology is distinct from therapeutic patents).' },
+  { id:'f8', q:'Why Korea first?', a:'Korea has the highest gastric cancer incidence globally. MFDS (Korean FDA) regulatory pathway for LDTs is faster and more accommodating than FDA for early-stage diagnostics companies. Sang\'s KSE network provides direct access to KAIST, Yonsei, and SNU — top institutions with GI oncology departments. The Korean market is a faster path to clinical data, revenue, and proof points that the US commercial launch will require.' },
+  { id:'f9', q:'What are the key risks?', a:'1) IP/FTO: not yet commissioned — blocking risk for institutional DD. 2) Sample size: n=10 is proof-of-concept, not clinically validated. 3) Regulatory uncertainty: LDT vs CDx pathway decision still in memo stage. 4) Solo founder: clinical operations lead needed. 5) Competitive response: large platforms could decide to build CLDN18.2-specific assays if the market becomes obvious — speed to clinical validation is our defense.' },
+  { id:'f10', q:'What does success look like at end of pre-seed?', a:'By Q4 2026 (18 months post-close): 1) n=50+ concordance validation dataset from MD Anderson study, ready for ASCO/AACR abstract submission. 2) IP/FTO analysis complete, provisional patent filed. 3) LDT commercially operational in Korea via Samsung Medical partnership. 4) Term sheet in negotiation with pharma CDx partner (AZ or Astellas). 5) $500K+ ARR from Korean LDT operations. These milestones are sufficient for a $10–15M seed round.' },
+];
+
+// ============================================================
+// UTILITY
+// ============================================================
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function daysSince(dateStr) {
+  if (!dateStr) return 999;
+  const d = new Date(dateStr);
+  return Math.floor((TODAY - d) / 86400000);
+}
+
+function toggleExpand(el) {
+  el.classList.toggle('open');
+  const body = el.nextElementSibling;
+  body.classList.toggle('open');
+}
+function toggleIntel(el) {
+  el.classList.toggle('open');
+  const body = el.nextElementSibling;
+  if (body) body.classList.toggle('open');
+}
+
+// ============================================================
+// TABS
+// ============================================================
+document.getElementById('navTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.nav-tab');
+  if (!tab) return;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('page-' + tab.dataset.page).classList.add('active');
+});
+
+// ============================================================
+// DAYS BADGE
+// ============================================================
+function updateDaysBadge() {
+  const target = new Date('2026-05-15');
+  const diff = Math.ceil((target - TODAY) / 86400000);
+  document.getElementById('daysBadge').textContent = diff + 'd to target close';
+}
+
+// ============================================================
+// PIPELINE FUNNEL
+// ============================================================
+function buildPipelineFunnel() {
+  const counts = {};
+  STAGES.forEach(s => counts[s.key] = 0);
+  counts['passed'] = 0; counts['stay-in-touch'] = 0;
+  INVESTORS.forEach(inv => { if (counts[inv.stage] !== undefined) counts[inv.stage]++; });
+  const total = INVESTORS.length;
+  document.getElementById('totalInvestors').textContent = total;
+  const viz = document.getElementById('pipelineViz');
+  const legend = document.getElementById('pipeLegend');
+  viz.innerHTML = '';
+  legend.innerHTML = '';
+  const mainStages = STAGES.filter(s => counts[s.key] > 0);
+  const maxCount = Math.max(...mainStages.map(s => counts[s.key]), 1);
+  mainStages.forEach(s => {
+    const pct = Math.max(4, (counts[s.key] / maxCount) * 100);
+    const seg = document.createElement('div');
+    seg.className = 'pipe-seg';
+    seg.style.cssText = `background:${s.color}22;flex:${counts[s.key]};border-left:2px solid ${s.color}`;
+    seg.innerHTML = `<span class="pipe-seg-name" style="color:${s.color}">${s.label}</span><span class="pipe-seg-n" style="color:${s.color}">${counts[s.key]}</span>`;
+    viz.appendChild(seg);
+    const leg = document.createElement('span');
+    leg.innerHTML = `<span style="color:${s.color}">●</span> ${s.label} (${counts[s.key]})`;
+    legend.appendChild(leg);
+  });
+}
+
+// ============================================================
+// KANBAN
+// ============================================================
+function buildKanban() {
+  const board = document.getElementById('kanbanBoard');
+  board.innerHTML = '';
+  const allCols = [...STAGES, {key:'stay-in-touch',label:'Stay-In-Touch',color:'#7c6dfa'}, {key:'passed',label:'Passed',color:'#55556a'}];
+  const countEl = document.getElementById('pipelineCount');
+  countEl.textContent = `${INVESTORS.length} investors tracked`;
+  allCols.forEach(stage => {
+    const investors = INVESTORS.filter(i => i.stage === stage.key);
+    if (investors.length === 0) return;
+    const col = document.createElement('div');
+    col.className = 'kanban-col' + (OUTCOMES.includes(stage.key) ? ' outcome-col' : '');
+    col.innerHTML = `<div class="kanban-col-head" style="background:${stage.color}18;border-left:3px solid ${stage.color}">
+      <span class="kanban-col-label" style="color:${stage.color}">${stage.label}</span>
+      <span class="kanban-col-count">${investors.length}</span>
+    </div>`;
+    investors.forEach(inv => {
+      const card = document.createElement('div');
+      card.className = 'kanban-card';
+      card.id = 'kcard-' + inv.id;
+      const tierColor = inv.tier === 1 ? 'var(--red)' : inv.tier === 2 ? 'var(--orange)' : 'var(--t3)';
+      card.innerHTML = `<div class="kc-name">${inv.name}</div>
+        <div class="kc-firm" style="font-size:10px;color:var(--t3)">${inv.firm}</div>
+        <div class="kc-tags">
+          <span class="kc-tag" style="background:${tierColor}18;color:${tierColor}">T${inv.tier}</span>
+          <span class="kc-tag" style="background:${stage.color}18;color:${stage.color}">${stage.label}</span>
+        </div>
+        <div class="kc-detail" id="kd-${inv.id}">
+          <div class="kc-detail-row"><span class="kc-detail-label">Focus:</span><span>${inv.focus}</span></div>
+          ${inv.email ? `<div class="kc-detail-row"><span class="kc-detail-label">Email:</span><span>${inv.email}</span></div>` : ''}
+          <div style="margin-top:6px;font-size:11px;color:var(--t2)">${inv.notes}</div>
+          <button class="btn btn-accent" style="margin-top:8px;font-size:10px" onclick="generateInvestorBriefing('${inv.id}');event.stopPropagation()">🤖 Generate Briefing</button>
+          <div id="brief-${inv.id}" style="display:none;margin-top:8px;font-size:11px;color:var(--t2);background:var(--s4);padding:8px;border-radius:5px;line-height:1.5;max-height:200px;overflow-y:auto;white-space:pre-wrap"></div>
+        </div>`;
+      card.addEventListener('click', () => {
+        card.classList.toggle('expanded');
+        document.getElementById('kd-' + inv.id).classList.toggle('open');
+      });
+      col.appendChild(card);
+    });
+    board.appendChild(col);
+  });
+}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+function buildCalendar() {
+  const list = document.getElementById('calendarList');
+  list.innerHTML = '';
+  const stored = (state.calBriefings) || {};
+  const days = {'Mon':1,'Tue':2,'Wed':3,'Thu':4,'Fri':5,'Sat':6,'Sun':0};
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  CALENDAR_EVENTS.forEach(ev => {
+    const d = new Date(ev.date);
+    const dow = DOW[d.getDay()];
+    const dayNum = d.getDate();
+    const typeClass = 'type-' + ev.type;
+    const container = document.createElement('div');
+    container.className = 'cal-event';
+    const briefingStored = stored[ev.id] || '';
+    container.innerHTML = `<div class="cal-event-head" onclick="toggleCalEvent('${ev.id}')">
+      <div class="cal-date-block">
+        <div class="cal-date-day">${dayNum}</div>
+        <div class="cal-date-dow">${dow}</div>
+      </div>
+      <div class="cal-event-info">
+        <div class="cal-event-title">${ev.title}</div>
+        <div class="cal-event-sub">${ev.time} · ${ev.firm}</div>
+      </div>
+      <span class="type-badge ${typeClass}">${ev.type}</span>
+      <span class="expand-arrow" style="font-size:10px;color:var(--t3);margin-left:8px">▶</span>
+    </div>
+    <div class="cal-event-body" id="calbody-${ev.id}">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:10px;line-height:1.6">${ev.notes}</div>
+      ${ev.email ? `<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Email: <a href="mailto:${ev.email}" style="color:var(--accent)">${ev.email}</a></div>` : ''}
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-accent" onclick="generateCalBriefing('${ev.id}')">🤖 Generate Briefing</button>
+        <span id="calstatus-${ev.id}" style="font-size:11px;color:var(--t3)"></span>
+      </div>
+      <div class="briefing-output" id="calbrief-${ev.id}" style="display:${briefingStored ? 'block' : 'none'}">${briefingStored}</div>
+    </div>`;
+    list.appendChild(container);
+  });
+}
+
+function toggleCalEvent(id) {
+  const body = document.getElementById('calbody-' + id);
+  const head = body.previousElementSibling;
+  body.classList.toggle('open');
+  const arrow = head.querySelector('.expand-arrow');
+  if (arrow) arrow.style.transform = body.classList.contains('open') ? 'rotate(90deg)' : '';
+}
+
+// ============================================================
+// DEEPSEEK API
+// ============================================================
+function getApiKey() {
+  return localStorage.getItem(DS_KEY) || '';
+}
+
+async function callDeepSeek(prompt, statusEl, outputEl) {
+  const key = getApiKey();
+  if (!key) {
+    showToast('Add your DeepSeek API key in ⚙ Settings first');
+    return;
+  }
+  statusEl.innerHTML = '<span class="loading"></span>Generating...';
+  outputEl.style.display = 'block';
+  outputEl.textContent = '';
+
+  try {
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: prompt }],
+        stream: true,
+        max_tokens: 800
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      outputEl.textContent = 'Error: ' + response.status + ' — ' + err;
+      statusEl.textContent = 'Error';
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try {
+          const parsed = JSON.parse(data);
+          const delta = parsed.choices?.[0]?.delta?.content;
+          if (delta) outputEl.textContent += delta;
+        } catch {}
+      }
+    }
+    statusEl.textContent = 'Done';
+  } catch(e) {
+    outputEl.textContent = 'Error: ' + e.message + '\n\nNote: If you see a CORS error, the DeepSeek API may not allow browser-side calls. In that case, copy the briefing prompt and paste it into chat.deepseek.com directly.';
+    statusEl.textContent = 'Error';
+  }
+}
+
+async function generateCalBriefing(id) {
+  const ev = CALENDAR_EVENTS.find(e => e.id === id);
+  if (!ev) return;
+  const statusEl = document.getElementById('calstatus-' + id);
+  const outputEl = document.getElementById('calbrief-' + id);
+
+  let prompt = '';
+  if (ev.type === 'investor' || ev.type === 'clinical') {
+    prompt = `You are a pre-call briefing assistant for Sang Lee, CEO of Eigen Bio. Eigen Bio is developing a CLDN18.2 liquid biopsy companion diagnostic for gastric cancer with 100% concordance with tissue biopsy (n=10, Spearman r=0.76, Anal. Chem. 2021). Zolbetuximab (Vyloy) was FDA-approved Oct 2024 for CLDN18.2+ patients, creating an immediate companion diagnostic market. Generate a concise pre-call briefing for the following meeting:\n\nTitle: ${ev.title}\nOrg: ${ev.org}\nFirm: ${ev.firm}\nTime: ${ev.time} on ${ev.date}\nNotes: ${ev.notes}\n\nInclude: 1) Who they are and why they matter, 2) Key objectives for this call, 3) What to lead with, 4) Likely concerns, 5) Specific ask.`;
+  } else if (ev.type === 'conference') {
+    prompt = `You are a conference strategy assistant for Sang Lee, CEO of Eigen Bio (CLDN18.2 liquid biopsy CDx, 100% concordance, Anal. Chem. 2021). Generate a networking and strategy brief for:\n\nConference: ${ev.title}\nDate: ${ev.date}\nNotes: ${ev.notes}\n\nInclude: 1) Top 5 investor types to target at this conference, 2) Top 3 KOLs or clinical contacts to seek out, 3) What to say in a 30-second intro, 4) Competitive intel to gather, 5) One concrete goal for the week.`;
+  } else {
+    prompt = `Generate a concise prep brief for this meeting:\nTitle: ${ev.title}\nNotes: ${ev.notes}`;
+  }
+
+  await callDeepSeek(prompt, statusEl, outputEl);
+  if (!state.calBriefings) state.calBriefings = {};
+  state.calBriefings[id] = outputEl.textContent;
+  saveState(state);
+}
+
+async function generateInvestorBriefing(invId) {
+  const inv = INVESTORS.find(i => i.id === invId);
+  if (!inv) return;
+  const outputEl = document.getElementById('brief-' + invId);
+  const statusEl = document.createElement('span');
+  outputEl.style.display = 'block';
+
+  const prompt = `You are a pre-meeting briefing assistant for Sang Lee, CEO of Eigen Bio. Eigen Bio is developing a CLDN18.2 liquid biopsy companion diagnostic for gastric cancer with 100% concordance with tissue biopsy (n=10, Spearman r=0.76, Anal. Chem. 2021). Vyloy (zolbetuximab) FDA-approved Oct 2024 creates the companion diagnostic market. Pre-seed raise: $3M SAFE.\n\nGenerate a concise investor briefing for:\nInvestor: ${inv.name}\nFirm: ${inv.firm}\nStage: ${inv.stage}\nFocus: ${inv.focus}\nContext: ${inv.notes}\n\nInclude: 1) Who they are and why this meeting matters, 2) What they likely care about most, 3) What to lead with, 4) Anticipated objections and responses, 5) Specific ask for this stage.`;
+
+  outputEl.textContent = 'Generating...';
+  const key = getApiKey();
+  if (!key) { showToast('Add your DeepSeek API key in ⚙ Settings'); outputEl.style.display='none'; return; }
+
+  outputEl.textContent = '';
+  try {
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], stream: true, max_tokens: 600 })
+    });
+    if (!response.ok) { outputEl.textContent = 'API error: ' + response.status; return; }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try { const p = JSON.parse(data); const d = p.choices?.[0]?.delta?.content; if(d) outputEl.textContent += d; } catch {}
+      }
+    }
+  } catch(e) { outputEl.textContent = 'Error: ' + e.message; }
+}
+
+// ============================================================
+// DATA ROOM
+// ============================================================
+function buildDataRoom() {
+  const list = document.getElementById('dataRoomList');
+  list.innerHTML = '';
+  const stored = state.docs || {};
+  DEFAULT_DOCS.forEach(doc => {
+    const docState = stored[doc.id] || {};
+    const lastReviewed = docState.lastReviewed || doc.lastReviewed;
+    const checkDate = lastReviewed || doc.addedDate;
+    const age = daysSince(checkDate);
+    const dismissedUntil = docState.dismissedUntil ? new Date(docState.dismissedUntil) : null;
+    const dismissed = dismissedUntil && dismissedUntil > TODAY;
+    const isStale = age > 90;
+    const needsReview = age > 30 && !isStale;
+    const isCritical = doc.criticalGap;
+
+    let rowClass = 'doc-row';
+    if (isCritical) rowClass += ' stale';
+    else if (isStale && !dismissed) rowClass += ' stale';
+    else if (needsReview && !dismissed) rowClass += ' needs-review';
+
+    const catColors = { pitch:'var(--accent)', data:'var(--accent2)', financial:'var(--green)', legal:'var(--red)', other:'var(--blue)' };
+    const catColor = catColors[doc.cat] || 'var(--t2)';
+
+    let warnHtml = '';
+    if (isCritical) {
+      warnHtml = `<div class="doc-warn red">🚨 Critical gap — not yet commissioned. Investors will ask. Budget $8–15K before next DD meeting.</div>`;
+    } else if (isStale && !dismissed) {
+      warnHtml = `<div class="doc-warn red">⚠ Stale — ${age} days since last review. Update or confirm still current.</div>`;
+    } else if (needsReview && !dismissed) {
+      warnHtml = `<div class="doc-warn">⏰ Needs review — ${age} days since ${lastReviewed ? 'last review' : 'added'}.</div>`;
+    }
+
+    const el = document.createElement('div');
+    el.className = rowClass;
+    el.innerHTML = `<div class="doc-top">
+      <span class="doc-name">${doc.name}</span>
+      <span class="doc-ver">${doc.ver}</span>
+      <span class="kc-tag" style="background:${catColor}18;color:${catColor};font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700">${doc.cat.toUpperCase()}</span>
+      <span class="kc-tag" style="background:${doc.status==='current'?'rgba(46,213,115,.1)':'rgba(255,140,0,.1)'};color:${doc.status==='current'?'var(--green)':'var(--orange)'};font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700">${doc.status}</span>
+    </div>
+    <div class="doc-meta">${doc.notes}</div>
+    ${warnHtml}
+    <div style="font-size:10px;color:var(--t3);margin-bottom:8px">Added: ${doc.addedDate}${lastReviewed ? ' · Last reviewed: ' + lastReviewed : ''} · Age: ${age} days</div>
+    <div class="doc-actions">
+      ${doc.url ? `<a href="${doc.url}" target="_blank" class="doc-btn">🔗 Open</a>` : ''}
+      ${!isCritical ? `<button class="doc-btn green" onclick="markReviewed('${doc.id}')">✓ Mark Reviewed</button>` : ''}
+      ${(needsReview || isStale) && !isCritical && !dismissed ? `<button class="doc-btn" onclick="dismissWarning('${doc.id}')">Dismiss 7d</button>` : ''}
+    </div>`;
+    list.appendChild(el);
+  });
+}
+
+function markReviewed(docId) {
+  if (!state.docs) state.docs = {};
+  if (!state.docs[docId]) state.docs[docId] = {};
+  state.docs[docId].lastReviewed = TODAY.toISOString().split('T')[0];
+  saveState(state);
+  buildDataRoom();
+  showToast('Marked as reviewed today');
+}
+
+function dismissWarning(docId) {
+  if (!state.docs) state.docs = {};
+  if (!state.docs[docId]) state.docs[docId] = {};
+  const d = new Date(TODAY);
+  d.setDate(d.getDate() + 7);
+  state.docs[docId].dismissedUntil = d.toISOString().split('T')[0];
+  saveState(state);
+  buildDataRoom();
+  showToast('Warning dismissed for 7 days');
+}
+
+// ============================================================
+// MEETINGS
+// ============================================================
+function buildMeetings() {
+  const list = document.getElementById('meetingsList');
+  list.innerHTML = '';
+  MEETINGS.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'meeting-entry';
+    const statusColor = m.status === 'upcoming' ? 'var(--green)' : m.status === 'completed' ? 'var(--t3)' : 'var(--orange)';
+    el.innerHTML = `<div class="meeting-head" onclick="toggleMeeting('${m.id}')">
+      <span class="meeting-date">${m.date}</span>
+      <span class="meeting-title">${m.title}</span>
+      <span class="kc-tag" style="background:${statusColor}18;color:${statusColor};font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700">${m.status}</span>
+      <span class="expand-arrow" style="font-size:10px;color:var(--t3);margin-left:8px">▶</span>
+    </div>
+    <div class="meeting-body" id="mbody-${m.id}">
+      <div class="meeting-label">Notes</div>
+      <div class="meeting-note">${m.notes}</div>
+      <div class="meeting-label">Action Items</div>
+      <ul style="padding-left:16px;font-size:12px;color:var(--t2);line-height:1.8">
+        ${m.action_items.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    </div>`;
+    list.appendChild(el);
+  });
+}
+
+function toggleMeeting(id) {
+  const body = document.getElementById('mbody-' + id);
+  body.classList.toggle('open');
+  const arrow = body.previousElementSibling.querySelector('.expand-arrow');
+  if (arrow) arrow.style.transform = body.classList.contains('open') ? 'rotate(90deg)' : '';
+}
+
+// ============================================================
+// FAQ
+// ============================================================
+function buildFaq() {
+  const list = document.getElementById('faqList');
+  list.innerHTML = '';
+  FAQS.forEach(f => {
+    const stored = state.faqAnswers?.[f.id] || f.a;
+    const el = document.createElement('div');
+    el.className = 'faq-item';
+    el.innerHTML = `<div class="faq-q" id="fq-${f.id}" onclick="toggleFaq('${f.id}')">
+      <span style="color:var(--accent);font-size:13px;flex-shrink:0">Q</span>
+      <span style="flex:1">${f.q}</span>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="faq-a" id="fa-${f.id}">
+      <div id="fa-text-${f.id}">${stored}</div>
+      <div class="faq-actions">
+        <button class="btn btn-accent" style="font-size:10px" onclick="refineFaqAnswer('${f.id}')">✨ Refine Answer</button>
+        <span id="faqstatus-${f.id}" style="font-size:11px;color:var(--t3);margin-left:8px"></span>
+      </div>
+    </div>`;
+    list.appendChild(el);
+  });
+}
+
+function toggleFaq(id) {
+  const q = document.getElementById('fq-' + id);
+  const a = document.getElementById('fa-' + id);
+  q.classList.toggle('open');
+  a.classList.toggle('open');
+}
+
+async function refineFaqAnswer(faqId) {
+  const f = FAQS.find(x => x.id === faqId);
+  if (!f) return;
+  const textEl = document.getElementById('fa-text-' + faqId);
+  const statusEl = document.getElementById('faqstatus-' + faqId);
+  const currentAnswer = textEl.textContent;
+  const prompt = `You are a fundraising pitch coach for Eigen Bio, a company developing CLDN18.2 liquid biopsy companion diagnostics for gastric cancer. Rewrite the following investor FAQ answer to be crisper, more confident, and more persuasive. Keep it under 150 words. Do not add new claims — just sharpen the language and structure.\n\nQuestion: ${f.q}\n\nCurrent answer: ${currentAnswer}`;
+
+  const key = getApiKey();
+  if (!key) { showToast('Add your DeepSeek API key in ⚙ Settings'); return; }
+
+  statusEl.innerHTML = '<span class="loading"></span>';
+  textEl.textContent = '';
+  try {
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], stream: true, max_tokens: 300 })
+    });
+    if (!response.ok) { textEl.textContent = currentAnswer; statusEl.textContent = 'Error'; return; }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try { const p = JSON.parse(data); const d = p.choices?.[0]?.delta?.content; if(d) textEl.textContent += d; } catch {}
+      }
+    }
+    if (!state.faqAnswers) state.faqAnswers = {};
+    state.faqAnswers[faqId] = textEl.textContent;
+    saveState(state);
+    statusEl.textContent = '✓ Refined';
+  } catch(e) { textEl.textContent = currentAnswer; statusEl.textContent = 'Error'; }
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  const modal = document.getElementById('settingsModal');
+  document.getElementById('deepseekKeyInput').value = getApiKey();
+  modal.classList.add('open');
+});
+document.getElementById('settingsModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('settingsModal')) closeSettings();
+});
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+function saveSettings() {
+  const key = document.getElementById('deepseekKeyInput').value.trim();
+  if (key) {
+    localStorage.setItem(DS_KEY, key);
+    showToast('DeepSeek API key saved');
+  } else {
+    localStorage.removeItem(DS_KEY);
+    showToast('API key cleared');
+  }
+  closeSettings();
+}
+
+// ============================================================
+// CALENDAR SYNC (placeholder)
+// ============================================================
+function syncCalendar() {
+  showToast('Calendar synced (placeholder — connect /api/gcal for live sync)');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  updateDaysBadge();
+  buildPipelineFunnel();
+  buildKanban();
+  buildCalendar();
+  buildMeetings();
+  buildDataRoom();
+  buildFaq();
+}
+
+init();
+</script>
+</body>
+</html>
