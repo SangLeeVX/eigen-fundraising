@@ -270,8 +270,8 @@ small{font-size:11px;color:var(--t3)}
   <div class="stats-row">
     <div class="stat">
       <div class="stat-label">Target Raise</div>
-      <div class="stat-val" style="color:var(--accent2)">$3M</div>
-      <div class="stat-sub">Pre-Seed SAFE</div>
+      <div class="stat-val" style="color:var(--accent2)">$50M</div>
+      <div class="stat-sub">Series A</div>
     </div>
     <div class="stat">
       <div class="stat-label">Committed</div>
@@ -633,7 +633,7 @@ small{font-size:11px;color:var(--t3)}
     </div>
     <div class="narrative-section">
       <h3>The Ask</h3>
-      <p>Raising <span class="metric-pill">$3M pre-seed SAFE</span>. Use of funds: expand clinical validation to n=50+ (MD Anderson), commission IP/FTO analysis, hire one clinical scientist, initiate MFDS pre-submission meeting in Korea. Milestone: validated assay data sufficient for pharma co-development conversation (AZ, Astellas) by Q4 2026.</p>
+      <p>Raising <span class="metric-pill">$50M Series A</span>. Use of funds: expand clinical validation to n=50+ (MD Anderson), commission IP/FTO analysis, hire one clinical scientist, initiate MFDS pre-submission meeting in Korea. Milestone: validated assay data sufficient for pharma co-development conversation (AZ, Astellas) by Q4 2026.</p>
     </div>
     <div class="narrative-section">
       <h3>Team</h3>
@@ -1094,7 +1094,7 @@ async function generateInvestorBriefing(invId) {
   const statusEl = document.createElement('span');
   outputEl.style.display = 'block';
 
-  const prompt = `You are a pre-meeting briefing assistant for Sang Lee, CEO of Eigen Bio. Eigen Bio is developing a CLDN18.2 liquid biopsy companion diagnostic for gastric cancer with 100% concordance with tissue biopsy (n=10, Spearman r=0.76, Anal. Chem. 2021). Vyloy (zolbetuximab) FDA-approved Oct 2024 creates the companion diagnostic market. Pre-seed raise: $3M SAFE.\n\nGenerate a concise investor briefing for:\nInvestor: ${inv.name}\nFirm: ${inv.firm}\nStage: ${inv.stage}\nFocus: ${inv.focus}\nContext: ${inv.notes}\n\nInclude: 1) Who they are and why this meeting matters, 2) What they likely care about most, 3) What to lead with, 4) Anticipated objections and responses, 5) Specific ask for this stage.`;
+  const prompt = `You are a pre-meeting briefing assistant for Sang Lee, CEO of Eigen Bio. Eigen Bio is developing a CLDN18.2 liquid biopsy companion diagnostic for gastric cancer with 100% concordance with tissue biopsy (n=10, Spearman r=0.76, Anal. Chem. 2021). Vyloy (zolbetuximab) FDA-approved Oct 2024 creates the companion diagnostic market. Raise: $50M Series A.\n\nGenerate a concise investor briefing for:\nInvestor: ${inv.name}\nFirm: ${inv.firm}\nStage: ${inv.stage}\nFocus: ${inv.focus}\nContext: ${inv.notes}\n\nInclude: 1) Who they are and why this meeting matters, 2) What they likely care about most, 3) What to lead with, 4) Anticipated objections and responses, 5) Specific ask for this stage.`;
 
   outputEl.textContent = 'Generating...';
   const key = getApiKey();
