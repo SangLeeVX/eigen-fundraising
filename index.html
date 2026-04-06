@@ -251,6 +251,7 @@ small{font-size:11px;color:var(--t3)}
     <div class="nav-tab" data-page="meetings">📋 Meetings</div>
     <div class="nav-tab" data-page="dataroom">🗄 Data Room</div>
     <div class="nav-tab" data-page="faq">❓ FAQ</div>
+    <div class="nav-tab" data-page="intel">🔍 Intel</div>
   </div>
   <div class="topnav-right">
     <div class="round-badge">Pre-Seed</div>
@@ -314,7 +315,7 @@ small{font-size:11px;color:var(--t3)}
         <span class="dot-red"></span>
         <div class="action-text">
           <strong>Identify Andrew Sundstrom — research before call</strong>
-          Self-listed as "Self" in Calendly. Unknown background. Use DeepSeek briefing before the call.
+          Self-listed as "Self" in Calendly. Unknown background. Click Generate Briefing on Calendar tab before the call.
           <div class="action-due">📅 Apr 7 · 09:00 KST</div>
         </div>
       </div>
@@ -666,9 +667,53 @@ small{font-size:11px;color:var(--t3)}
 <div class="page" id="page-faq">
   <div style="margin-bottom:16px">
     <div style="font-size:16px;font-weight:800;margin-bottom:4px">Investor FAQ</div>
-    <div style="font-size:12px;color:var(--t2)">Click any question to expand. Use ✨ Refine Answer to rewrite with DeepSeek.</div>
+    <div style="font-size:12px;color:var(--t2)">Click any question to expand. Use ✨ Refine Answer to rewrite with Claude.</div>
   </div>
   <div id="faqList"></div>
+</div>
+
+<!-- ==================== INTEL ==================== -->
+<div class="page" id="page-intel">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div style="font-size:16px;font-weight:800">Intelligence Feed</div>
+    <button class="btn btn-accent" onclick="loadIntel()" id="intelRefreshBtn">↻ Refresh All</button>
+    <span id="intelStatus" style="font-size:11px;color:var(--t3)"></span>
+  </div>
+
+  <!-- Email Intel -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-head">
+      <span class="card-title">📧 Email Intel</span>
+      <button class="btn" style="font-size:10px" onclick="loadEmails()">Scan Emails</button>
+    </div>
+    <div class="card-body" id="emailIntelBody">
+      <div style="color:var(--t3);font-size:12px">Click "Scan Emails" to analyze recent fundraising emails and get suggested next steps.</div>
+    </div>
+  </div>
+
+  <!-- News & Investor Leads -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📰 Market Intel & Thesis Validation</span></div>
+      <div class="card-body" id="newsInsightsBody">
+        <div style="color:var(--t3);font-size:12px">Click Refresh All to scan news.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🎯 New Investor Leads</span></div>
+      <div class="card-body" id="investorLeadsBody">
+        <div style="color:var(--t3);font-size:12px">Identified from news and funding announcements.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Talking Points from News -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">💬 This Week's Talking Points</span></div>
+    <div class="card-body" id="talkingPointsBody">
+      <div style="color:var(--t3);font-size:12px">New angles from this week's news for your pitches.</div>
+    </div>
+  </div>
 </div>
 
 </div><!-- end main-scroll -->
@@ -678,12 +723,24 @@ small{font-size:11px;color:var(--t3)}
 <div class="modal-overlay" id="settingsModal">
   <div class="modal">
     <h3>⚙ Settings</h3>
-    <p>Enter your DeepSeek API key to enable AI briefing generation. Key is stored only in your browser (localStorage).</p>
-    <input type="password" id="deepseekKeyInput" placeholder="sk-..." autocomplete="off">
-    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Get your key at platform.deepseek.com → API Keys</div>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:14px">Connect to the local server for live ClickUp data, calendar context, and DeepSeek-powered briefings.</p>
+
+    <div style="font-size:11px;color:var(--t3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">API Server URL</div>
+    <input type="text" id="fcApiUrlInput" placeholder="http://localhost:8002" autocomplete="off" style="margin-bottom:8px">
+
+    <div style="font-size:11px;color:var(--t3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">API Key (optional)</div>
+    <input type="password" id="fcApiKeyInput" placeholder="Bearer token from .env FC_API_KEY" autocomplete="off">
+    <div style="font-size:11px;color:var(--t3);margin-top:6px;margin-bottom:12px">
+      Start server: <code style="background:var(--s3);padding:1px 5px;border-radius:3px;font-size:10px">python fundraising_api.py</code>
+      &nbsp;|&nbsp; Needs: DEEPSEEK_API_KEY · CLICKUP_API_TOKEN · CLICKUP_LIST_ID
+    </div>
+
+    <div id="apiStatusMsg" style="font-size:11px;color:var(--t3);min-height:16px;margin-bottom:10px"></div>
+
     <div class="modal-actions">
+      <button class="btn" onclick="testApiConnection()">Test Connection</button>
       <button class="btn" onclick="closeSettings()">Cancel</button>
-      <button class="btn btn-accent" onclick="saveSettings()">Save Key</button>
+      <button class="btn btn-accent" onclick="saveSettings()">Save</button>
     </div>
   </div>
 </div>
@@ -696,8 +753,27 @@ small{font-size:11px;color:var(--t3)}
 // STATE
 // ============================================================
 const STATE_KEY = 'eigen_fc_v4';
-const DS_KEY = 'deepseek_api_key';
+const FC_API_URL_KEY = 'fc_api_url';
+const FC_API_KEY_KEY = 'fc_api_key';
 const TODAY = new Date('2026-04-05');
+
+function getFcApiUrl() { return (localStorage.getItem(FC_API_URL_KEY) || '').replace(/\/$/, ''); }
+function getFcApiKey() { return localStorage.getItem(FC_API_KEY_KEY) || ''; }
+
+function fcHeaders() {
+  const key = getFcApiKey();
+  return { 'Content-Type': 'application/json', ...(key ? { 'Authorization': 'Bearer ' + key } : {}) };
+}
+
+async function fcFetch(path, opts = {}) {
+  const url = getFcApiUrl();
+  if (!url) return null;
+  try {
+    const r = await fetch(url + path, { headers: fcHeaders(), signal: AbortSignal.timeout(20000), ...opts });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
 
 function loadState() {
   try { return JSON.parse(localStorage.getItem(STATE_KEY)) || {}; } catch { return {}; }
@@ -777,7 +853,7 @@ const INVESTORS = [
 // CALENDAR EVENTS
 // ============================================================
 const CALENDAR_EVENTS = [
-  { id:'ce1', date:'2026-04-07', time:'09:00 KST', title:'Andrew Sundstrom — Eigen Bio US Meeting', org:'Andrew Sundstrom', firm:'Unknown — Self-listed', type:'investor', briefing:'', reviewed:false, notes:'Via Calendly. Company listed as "Self". Unknown background — use DeepSeek to research and generate briefing.' },
+  { id:'ce1', date:'2026-04-07', time:'09:00 KST', title:'Andrew Sundstrom — Eigen Bio US Meeting', org:'Andrew Sundstrom', firm:'Unknown — Self-listed', type:'investor', briefing:'', reviewed:false, notes:'Via Calendly. Company listed as "Self". Unknown background — generate briefing for research.' },
   { id:'ce2', date:'2026-04-07', time:'16:00 PDT', title:'Peter Zhou — Triatomic Capital', org:'Peter Zhou', firm:'Triatomic Capital', email:'pz@triatomic.ai', type:'investor', briefing:'', reviewed:false, notes:'Booked by Kristin. Already in pipeline at meeting stage. AI-driven biotech. Lead with concordance data + Vyloy market timing.' },
   { id:'ce3', date:'2026-04-07', time:'21:00 Lisbon / recurring', title:'EigenBio Follow-up (Recurring)', org:'Internal + 8 attendees', firm:'Internal', type:'internal', briefing:'', reviewed:false, notes:'Weekly recurring. 8 attendees. Likely investor update call or team sync. Prepare a crisp update on pipeline progress.' },
   { id:'ce4', date:'2026-04-08', time:'07:00 PDT', title:'Van Morris MD — MD Anderson Cancer Center', org:'Van Morris MD', firm:'MD Anderson', email:'vkmorris@mdanderson.org', type:'clinical', briefing:'', reviewed:false, notes:'GI oncology specialist at MD Anderson. KOL for gastric cancer. Clinical partnership + validation site opportunity. Not a financial investor but strategically critical — MD Anderson validation dramatically de-risks clinical story for investors. Objective: get a written LOI or MOU for validation site.' },
@@ -1000,71 +1076,26 @@ function toggleCalEvent(id) {
 }
 
 // ============================================================
-// DEEPSEEK API
+// FUNDRAISING API — all AI calls go through the local server
 // ============================================================
-function getApiKey() {
-  return localStorage.getItem(DS_KEY) || '';
+
+function formatBriefing(data) {
+  if (!data || !data.briefing) return data?.raw || 'No briefing returned.';
+  const b = data.briefing;
+  let text = '';
+  if (b.investor_background) text += b.investor_background + '\n\n';
+  if (b.why_this_matters)    text += '★ Why this matters\n' + b.why_this_matters + '\n\n';
+  if (b.talking_points?.length)
+    text += '📌 Talking points\n' + b.talking_points.map(p => '• ' + p).join('\n') + '\n\n';
+  if (b.questions_to_ask?.length)
+    text += '❓ Ask them\n' + b.questions_to_ask.map(q => '• ' + q).join('\n') + '\n\n';
+  if (b.watch_outs?.length)
+    text += '⚠ Watch outs\n' + b.watch_outs.map(w => '• ' + w).join('\n') + '\n\n';
+  if (b.ask)
+    text += '🎯 The ask\n' + b.ask;
+  return text.trim() || JSON.stringify(b, null, 2);
 }
 
-async function callDeepSeek(prompt, statusEl, outputEl) {
-  const key = getApiKey();
-  if (!key) {
-    showToast('Add your DeepSeek API key in ⚙ Settings first');
-    return;
-  }
-  statusEl.innerHTML = '<span class="loading"></span>Generating...';
-  outputEl.style.display = 'block';
-  outputEl.textContent = '';
-
-  try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [{ role: 'user', content: prompt }],
-        stream: true,
-        max_tokens: 800
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      outputEl.textContent = 'Error: ' + response.status + ' — ' + err;
-      statusEl.textContent = 'Error';
-      return;
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') break;
-        try {
-          const parsed = JSON.parse(data);
-          const delta = parsed.choices?.[0]?.delta?.content;
-          if (delta) outputEl.textContent += delta;
-        } catch {}
-      }
-    }
-    statusEl.textContent = 'Done';
-  } catch(e) {
-    outputEl.textContent = 'Error: ' + e.message + '\n\nNote: If you see a CORS error, the DeepSeek API may not allow browser-side calls. In that case, copy the briefing prompt and paste it into chat.deepseek.com directly.';
-    statusEl.textContent = 'Error';
-  }
-}
 
 async function generateCalBriefing(id) {
   const ev = CALENDAR_EVENTS.find(e => e.id === id);
@@ -1072,59 +1103,65 @@ async function generateCalBriefing(id) {
   const statusEl = document.getElementById('calstatus-' + id);
   const outputEl = document.getElementById('calbrief-' + id);
 
-  let prompt = '';
-  if (ev.type === 'investor' || ev.type === 'clinical') {
-    prompt = `You are a pre-call briefing assistant for Sang Lee, CEO of Eigen Bio. Eigen Bio is developing a CLDN18.2 liquid biopsy companion diagnostic for gastric cancer with 100% concordance with tissue biopsy (n=10, Spearman r=0.76, Anal. Chem. 2021). Zolbetuximab (Vyloy) was FDA-approved Oct 2024 for CLDN18.2+ patients, creating an immediate companion diagnostic market. Generate a concise pre-call briefing for the following meeting:\n\nTitle: ${ev.title}\nOrg: ${ev.org}\nFirm: ${ev.firm}\nTime: ${ev.time} on ${ev.date}\nNotes: ${ev.notes}\n\nInclude: 1) Who they are and why they matter, 2) Key objectives for this call, 3) What to lead with, 4) Likely concerns, 5) Specific ask.`;
-  } else if (ev.type === 'conference') {
-    prompt = `You are a conference strategy assistant for Sang Lee, CEO of Eigen Bio (CLDN18.2 liquid biopsy CDx, 100% concordance, Anal. Chem. 2021). Generate a networking and strategy brief for:\n\nConference: ${ev.title}\nDate: ${ev.date}\nNotes: ${ev.notes}\n\nInclude: 1) Top 5 investor types to target at this conference, 2) Top 3 KOLs or clinical contacts to seek out, 3) What to say in a 30-second intro, 4) Competitive intel to gather, 5) One concrete goal for the week.`;
-  } else {
-    prompt = `Generate a concise prep brief for this meeting:\nTitle: ${ev.title}\nNotes: ${ev.notes}`;
+  if (!getFcApiUrl()) {
+    showToast('Configure API server in ⚙ Settings');
+    return;
   }
 
-  await callDeepSeek(prompt, statusEl, outputEl);
-  if (!state.calBriefings) state.calBriefings = {};
-  state.calBriefings[id] = outputEl.textContent;
-  saveState(state);
+  statusEl.innerHTML = '<span class="loading"></span>Generating...';
+  outputEl.style.display = 'block';
+  outputEl.textContent = '';
+
+  // Extract investor name from title for richer briefings
+  const investorName = ev.title.split('—')[0].trim();
+
+  const data = await fcFetch('/briefing', {
+    method: 'POST',
+    body: JSON.stringify({
+      investor_name: investorName,
+      meeting_type: ev.type || 'meeting',
+      meeting_date: ev.date,
+      extra_context: `Event: ${ev.title}\nTime: ${ev.time}\nNotes: ${ev.notes || ''}`
+    })
+  });
+
+  if (data) {
+    outputEl.textContent = formatBriefing(data);
+    statusEl.textContent = 'Done';
+    if (!state.calBriefings) state.calBriefings = {};
+    state.calBriefings[id] = outputEl.textContent;
+    saveState(state);
+  } else {
+    outputEl.textContent = 'Could not reach API server. Is it running on ' + getFcApiUrl() + '?';
+    statusEl.textContent = 'Error';
+  }
 }
 
 async function generateInvestorBriefing(invId) {
   const inv = INVESTORS.find(i => i.id === invId);
   if (!inv) return;
   const outputEl = document.getElementById('brief-' + invId);
-  const statusEl = document.createElement('span');
   outputEl.style.display = 'block';
+  outputEl.textContent = 'Generating briefing...';
 
-  const prompt = `You are a pre-meeting briefing assistant for Sang Lee, CEO of Eigen Bio. Eigen Bio is developing a CLDN18.2 liquid biopsy companion diagnostic for gastric cancer with 100% concordance with tissue biopsy (n=10, Spearman r=0.76, Anal. Chem. 2021). Vyloy (zolbetuximab) FDA-approved Oct 2024 creates the companion diagnostic market. Raise: $50M Series A.\n\nGenerate a concise investor briefing for:\nInvestor: ${inv.name}\nFirm: ${inv.firm}\nStage: ${inv.stage}\nFocus: ${inv.focus}\nContext: ${inv.notes}\n\nInclude: 1) Who they are and why this meeting matters, 2) What they likely care about most, 3) What to lead with, 4) Anticipated objections and responses, 5) Specific ask for this stage.`;
+  if (!getFcApiUrl()) {
+    outputEl.textContent = '';
+    outputEl.style.display = 'none';
+    showToast('Configure API server URL in ⚙ Settings');
+    return;
+  }
 
-  outputEl.textContent = 'Generating...';
-  const key = getApiKey();
-  if (!key) { showToast('Add your DeepSeek API key in ⚙ Settings'); outputEl.style.display='none'; return; }
+  const data = await fcFetch('/briefing', {
+    method: 'POST',
+    body: JSON.stringify({
+      investor_name: inv.name,
+      meeting_type: 'investor meeting',
+      extra_context: inv.notes
+    })
+  });
 
-  outputEl.textContent = '';
-  try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], stream: true, max_tokens: 600 })
-    });
-    if (!response.ok) { outputEl.textContent = 'API error: ' + response.status; return; }
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') break;
-        try { const p = JSON.parse(data); const d = p.choices?.[0]?.delta?.content; if(d) outputEl.textContent += d; } catch {}
-      }
-    }
-  } catch(e) { outputEl.textContent = 'Error: ' + e.message; }
+  outputEl.textContent = data ? formatBriefing(data)
+    : 'Could not reach API. Is fundraising_api.py running on ' + getFcApiUrl() + '?';
 }
 
 // ============================================================
@@ -1276,65 +1313,207 @@ async function refineFaqAnswer(faqId) {
   const textEl = document.getElementById('fa-text-' + faqId);
   const statusEl = document.getElementById('faqstatus-' + faqId);
   const currentAnswer = textEl.textContent;
-  const prompt = `You are a fundraising pitch coach for Eigen Bio, a company developing CLDN18.2 liquid biopsy companion diagnostics for gastric cancer. Rewrite the following investor FAQ answer to be crisper, more confident, and more persuasive. Keep it under 150 words. Do not add new claims — just sharpen the language and structure.\n\nQuestion: ${f.q}\n\nCurrent answer: ${currentAnswer}`;
 
-  const key = getApiKey();
-  if (!key) { showToast('Add your DeepSeek API key in ⚙ Settings'); return; }
+  if (!getFcApiUrl()) { showToast('Configure API server in ⚙ Settings'); return; }
 
   statusEl.innerHTML = '<span class="loading"></span>';
-  textEl.textContent = '';
-  try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], stream: true, max_tokens: 300 })
-    });
-    if (!response.ok) { textEl.textContent = currentAnswer; statusEl.textContent = 'Error'; return; }
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') break;
-        try { const p = JSON.parse(data); const d = p.choices?.[0]?.delta?.content; if(d) textEl.textContent += d; } catch {}
-      }
-    }
+  const prompt = `You are a fundraising pitch coach for Eigen Bio ($50M Series A, CLDN18.2 CAR-T for gastric cancer). Rewrite the following investor FAQ answer to be crisper, more confident, and more persuasive. Keep it under 150 words. Do not add new claims — just sharpen the language.\n\nQuestion: ${f.q}\n\nCurrent answer: ${currentAnswer}`;
+
+  const data = await fcFetch('/complete', {
+    method: 'POST',
+    body: JSON.stringify({ prompt, max_tokens: 300 })
+  });
+
+  if (data?.text) {
+    textEl.textContent = data.text;
     if (!state.faqAnswers) state.faqAnswers = {};
-    state.faqAnswers[faqId] = textEl.textContent;
+    state.faqAnswers[faqId] = data.text;
     saveState(state);
     statusEl.textContent = '✓ Refined';
-  } catch(e) { textEl.textContent = currentAnswer; statusEl.textContent = 'Error'; }
+  } else {
+    textEl.textContent = currentAnswer;
+    statusEl.textContent = 'Error';
+  }
+}
+
+// ============================================================
+// ============================================================
+// INTEL TAB
+// ============================================================
+
+async function loadEmails() {
+  const body = document.getElementById('emailIntelBody');
+  body.innerHTML = '<span class="loading"></span><span style="font-size:12px;color:var(--t3)"> Scanning emails...</span>';
+  const data = await fcFetch('/emails?days=7');
+  if (!data) {
+    body.innerHTML = '<div style="font-size:12px;color:var(--warn)">Could not reach API. Is the server running?</div>';
+    return;
+  }
+  if (!data.emails?.length) {
+    body.innerHTML = `<div style="font-size:12px;color:var(--t3)">${data.summary || 'No fundraising-relevant emails found in the last 7 days.'}</div>`;
+    return;
+  }
+  let html = `<div style="font-size:11px;color:var(--t3);margin-bottom:10px">${data.summary} (${data.total_scanned} emails scanned)</div>`;
+
+  // Relevant emails
+  const rel = data.emails.filter(e => e.relevance === 'high' || e.relevance === 'medium');
+  rel.forEach(e => {
+    const col = e.relevance === 'high' ? 'var(--red)' : 'var(--orange)';
+    const badge = e.relevance === 'high' ? '🔴 HIGH' : '🟡 MED';
+    html += `<div style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:10px;font-weight:700;color:${col}">${badge}</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">${e.subject}</span>
+      </div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:6px">From: ${e.from}</div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">→ ${e.suggested_action}</div>
+      ${e.pipeline_update ? `<button class="btn btn-accent" style="font-size:10px" onclick="applyPipelineUpdate('${e.pipeline_update.investor}','${e.pipeline_update.new_stage}')">Update Pipeline: ${e.pipeline_update.investor} → ${e.pipeline_update.new_stage}</button>` : ''}
+    </div>`;
+  });
+
+  if (data.missed_opportunities?.length) {
+    html += `<div style="margin-top:10px;padding:10px;background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.2);border-radius:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:6px;letter-spacing:.5px">FOLLOW-UP OVERDUE</div>
+      ${data.missed_opportunities.map(m => `<div style="font-size:11px;color:var(--t2);margin-bottom:3px">• ${m}</div>`).join('')}
+    </div>`;
+  }
+  body.innerHTML = html;
+}
+
+async function loadNews() {
+  const insightsEl = document.getElementById('newsInsightsBody');
+  const leadsEl = document.getElementById('investorLeadsBody');
+  const tpEl = document.getElementById('talkingPointsBody');
+
+  insightsEl.innerHTML = '<span class="loading"></span><span style="font-size:12px;color:var(--t3)"> Scanning news...</span>';
+  leadsEl.innerHTML = '<span class="loading"></span>';
+  tpEl.innerHTML = '<span class="loading"></span>';
+
+  const data = await fcFetch('/news');
+  if (!data) {
+    insightsEl.innerHTML = '<div style="font-size:12px;color:var(--warn)">Could not reach API.</div>';
+    leadsEl.innerHTML = '';
+    tpEl.innerHTML = '';
+    return;
+  }
+
+  // Key insights + market signals
+  let insHtml = `<div style="font-size:11px;color:var(--t3);margin-bottom:10px">${data.articles_scanned || 0} articles scanned</div>`;
+  (data.key_insights || []).forEach(ins => {
+    insHtml += `<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start">
+      <span style="color:var(--accent2);flex-shrink:0;margin-top:1px">◆</span>
+      <span style="font-size:12px;color:var(--text);line-height:1.5">${ins}</span>
+    </div>`;
+  });
+  if (data.market_signals?.length) {
+    insHtml += `<div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:.5px;margin:12px 0 8px">THESIS VALIDATION</div>`;
+    data.market_signals.forEach(s => {
+      insHtml += `<div style="font-size:11px;color:var(--t2);margin-bottom:5px;padding-left:10px;border-left:2px solid var(--green)">• ${s}</div>`;
+    });
+  }
+  insightsEl.innerHTML = insHtml;
+
+  // Investor leads
+  let leadsHtml = '';
+  if (!data.investor_leads?.length) {
+    leadsHtml = '<div style="font-size:12px;color:var(--t3)">No new leads identified this scan.</div>';
+  } else {
+    data.investor_leads.forEach(lead => {
+      const tierColor = lead.tier === 'A' ? 'var(--green)' : lead.tier === 'B' ? 'var(--orange)' : 'var(--t3)';
+      leadsHtml += `<div style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:10px;font-weight:700;color:${tierColor}">TIER ${lead.tier}</span>
+          <span style="font-size:12px;font-weight:700;color:var(--text)">${lead.name}</span>
+        </div>
+        <div style="font-size:11px;color:var(--t2);margin-bottom:4px">${lead.reason}</div>
+        <div style="font-size:11px;color:var(--accent);font-style:italic">${lead.suggested_approach}</div>
+      </div>`;
+    });
+  }
+  leadsEl.innerHTML = leadsHtml;
+
+  // Talking points
+  let tpHtml = '';
+  (data.talking_points || []).forEach((tp, i) => {
+    tpHtml += `<div style="display:flex;gap:10px;margin-bottom:10px;padding:10px;background:var(--s3);border-radius:8px;align-items:flex-start">
+      <span style="font-size:16px;flex-shrink:0">💬</span>
+      <span style="font-size:12px;color:var(--text);line-height:1.5">${tp}</span>
+    </div>`;
+  });
+  tpEl.innerHTML = tpHtml || '<div style="font-size:12px;color:var(--t3)">No new talking points this scan.</div>';
+}
+
+async function loadIntel() {
+  document.getElementById('intelStatus').textContent = 'Loading...';
+  document.getElementById('intelRefreshBtn').disabled = true;
+  await Promise.all([loadEmails(), loadNews()]);
+  document.getElementById('intelStatus').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  document.getElementById('intelRefreshBtn').disabled = false;
+}
+
+async function applyPipelineUpdate(investorName, newStage) {
+  // Find the investor's task ID from cached pipeline
+  const data = await fcFetch('/pipeline');
+  if (!data) { showToast('Could not load pipeline'); return; }
+  const inv = data.investors.find(i => i.name?.toLowerCase().includes(investorName.toLowerCase()));
+  if (!inv?.id) { showToast('Investor not found in pipeline: ' + investorName); return; }
+  const result = await fcFetch('/pipeline/update', {
+    method: 'POST',
+    body: JSON.stringify({ task_id: inv.id, new_status: newStage })
+  });
+  if (result?.updated) {
+    showToast('Updated: ' + investorName + ' → ' + newStage);
+  } else {
+    showToast('Update failed — check ClickUp permissions');
+  }
 }
 
 // ============================================================
 // SETTINGS
 // ============================================================
 document.getElementById('settingsBtn').addEventListener('click', () => {
-  const modal = document.getElementById('settingsModal');
-  document.getElementById('deepseekKeyInput').value = getApiKey();
-  modal.classList.add('open');
+  document.getElementById('fcApiUrlInput').value = getFcApiUrl();
+  document.getElementById('fcApiKeyInput').value = getFcApiKey();
+  document.getElementById('apiStatusMsg').textContent = '';
+  document.getElementById('settingsModal').classList.add('open');
 });
 document.getElementById('settingsModal').addEventListener('click', e => {
   if (e.target === document.getElementById('settingsModal')) closeSettings();
 });
 function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
 function saveSettings() {
-  const key = document.getElementById('deepseekKeyInput').value.trim();
-  if (key) {
-    localStorage.setItem(DS_KEY, key);
-    showToast('DeepSeek API key saved');
-  } else {
-    localStorage.removeItem(DS_KEY);
-    showToast('API key cleared');
-  }
+  const fcUrl = document.getElementById('fcApiUrlInput').value.trim();
+  const fcKey = document.getElementById('fcApiKeyInput').value.trim();
+  if (fcUrl) localStorage.setItem(FC_API_URL_KEY, fcUrl); else localStorage.removeItem(FC_API_URL_KEY);
+  if (fcKey) localStorage.setItem(FC_API_KEY_KEY, fcKey); else localStorage.removeItem(FC_API_KEY_KEY);
+  showToast(fcUrl ? 'Connected to ' + fcUrl : 'API URL cleared');
   closeSettings();
+}
+async function testApiConnection() {
+  const url = document.getElementById('fcApiUrlInput').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('fcApiKeyInput').value.trim();
+  const msg = document.getElementById('apiStatusMsg');
+  if (!url) { msg.textContent = 'Enter a URL first'; msg.style.color = 'var(--warn)'; return; }
+  msg.textContent = 'Testing...'; msg.style.color = 'var(--t3)';
+  try {
+    const r = await fetch(url + '/health', {
+      headers: key ? { 'Authorization': 'Bearer ' + key } : {},
+      signal: AbortSignal.timeout(5000)
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const parts = [];
+      if (d.deepseek) parts.push('DeepSeek ✓');
+      if (d.clickup)  parts.push('ClickUp ✓');
+      if (d.gcal)     parts.push('GCal ✓');
+      msg.textContent = 'Connected — ' + (parts.join(' · ') || 'running (no integrations configured)');
+      msg.style.color = 'var(--green)';
+    } else {
+      msg.textContent = 'Server responded with ' + r.status; msg.style.color = 'var(--warn)';
+    }
+  } catch(e) {
+    msg.textContent = 'Cannot reach server — is it running?'; msg.style.color = 'var(--warn)';
+  }
 }
 
 // ============================================================
