@@ -236,6 +236,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Di
 hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
 small{font-size:11px;color:var(--t3)}
 
+/* NL COMMAND BAR */
+.nl-bar{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px}
+.nl-bar input{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:7px;padding:10px 13px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.nl-bar input:focus{border-color:var(--accent)}
+.nl-chip{font-size:10px;color:var(--t2);background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:2px 8px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.nl-chip:hover{color:var(--accent);border-color:rgba(124,109,250,.4)}
+
 /* DRAG AND DROP */
 .kanban-card{cursor:grab}
 .kanban-card:active{cursor:grabbing}
@@ -332,14 +339,26 @@ small{font-size:11px;color:var(--t3)}
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><span class="card-title">Recommended Next Steps</span></div>
-      <div class="card-body" style="font-size:12px;color:var(--t2);line-height:1.7">
-        <div style="margin-bottom:8px"><span style="color:var(--red);font-weight:700">1.</span> Close the IP/FTO gap before any more DD conversations. It will block you.</div>
-        <div style="margin-bottom:8px"><span style="color:var(--orange);font-weight:700">2.</span> Convert AACR into signed NDAs / intro calls with 3+ investors. Pre-schedule 1:1s now.</div>
-        <div style="margin-bottom:8px"><span style="color:var(--yellow);font-weight:700">3.</span> Turn Van Morris (MD Anderson) into a formal validation site — this is your most credible de-risking signal for investors.</div>
-        <div style="margin-bottom:8px"><span style="color:var(--accent2);font-weight:700">4.</span> Re-engage Dimension Capital with a specific, time-bounded ask. "Hot / SIT" means they're not gone — they need a reason to move.</div>
-        <div><span style="color:var(--blue);font-weight:700">5.</span> For Khosla, Casdin, Northpond: Sonnet-generate a personalized "state of the science" email with the concordance data as the hook. No pitch, just insight.</div>
+      <div class="card-head">
+        <span class="card-title">Immediate Tasks</span>
+        <span class="card-tag live">From pipeline</span>
+        <button class="btn" style="font-size:10px;margin-left:auto" onclick="loadImmediateTasks()">↻</button>
       </div>
+      <div class="card-body" style="padding:10px 14px" id="immediateTasksBox">
+        <div style="font-size:11px;color:var(--t3)">Loading from pipeline...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Investor Surfacing -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-head">
+      <span class="card-title">🎯 New Investor Leads</span>
+      <span class="card-tag new">From news</span>
+      <button class="btn" style="font-size:10px;margin-left:auto" onclick="loadInvestorSurface()">↻ Scan</button>
+    </div>
+    <div class="card-body" style="padding:10px 14px" id="investorSurfaceBox">
+      <div style="font-size:11px;color:var(--t3)">Click Scan to surface new investors from this week's news.</div>
     </div>
   </div>
 
@@ -468,6 +487,29 @@ small{font-size:11px;color:var(--t3)}
     <span class="card-tag live">Live</span>
     <span style="margin-left:auto;font-size:12px;color:var(--t2)" id="pipelineCount"></span>
   </div>
+
+  <!-- Natural Language Command Bar -->
+  <div class="nl-bar">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">
+      Pipeline Command &nbsp;<span style="color:var(--accent);font-weight:800">AI</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="text" id="nlCommandInput"
+        placeholder='e.g. "Move MSD Capital to term sheet" · "Add Sequoia at intro stage" · "Note to Khosla: sent deck"'
+        onkeydown="if(event.key==='Enter')executePipelineCommand()">
+      <button class="btn btn-accent" id="nlCmdBtn" onclick="executePipelineCommand()" style="white-space:nowrap;padding:5px 16px">⚡ Execute</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span style="font-size:10px;color:var(--t3);flex-shrink:0">Try:</span>
+      <span class="nl-chip" onclick="setNlCmd(this)">Move MSD Capital to term sheet</span>
+      <span class="nl-chip" onclick="setNlCmd(this)">Add Sequoia Capital at research stage</span>
+      <span class="nl-chip" onclick="setNlCmd(this)">Move Khosla to due diligence</span>
+      <span class="nl-chip" onclick="setNlCmd(this)">Mark Andreessen Horowitz as passed</span>
+      <span class="nl-chip" onclick="setNlCmd(this)">Note to Casdin: follow up on competitive landscape doc</span>
+    </div>
+    <div id="nlCommandResult" style="display:none;margin-top:10px"></div>
+  </div>
+
   <div class="kanban-wrap">
     <div class="kanban-board" id="kanbanBoard"></div>
   </div>
@@ -1513,6 +1555,150 @@ async function applyPipelineUpdate(investorName, newStage) {
 }
 
 // ============================================================
+// NL PIPELINE COMMAND
+// ============================================================
+function setNlCmd(el) {
+  document.getElementById('nlCommandInput').value = el.textContent;
+  document.getElementById('nlCommandInput').focus();
+}
+
+async function executePipelineCommand() {
+  const input  = document.getElementById('nlCommandInput');
+  const btn    = document.getElementById('nlCmdBtn');
+  const result = document.getElementById('nlCommandResult');
+  const cmd    = input.value.trim();
+  if (!cmd) return;
+  if (!getFcApiUrl()) { showToast('Configure API server in ⚙ Settings'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '...';
+  result.style.display = 'block';
+  result.innerHTML = '<span class="loading"></span><span style="font-size:12px;color:var(--t3)"> Parsing command with AI...</span>';
+
+  const data = await fcFetch('/pipeline/command', {
+    method: 'POST',
+    body: JSON.stringify({ command: cmd })
+  });
+
+  btn.disabled = false;
+  btn.textContent = '⚡ Execute';
+
+  if (!data) {
+    result.innerHTML = '<div style="font-size:12px;color:var(--red);padding:8px">Could not reach API server.</div>';
+    return;
+  }
+
+  if (data.success) {
+    result.innerHTML = `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(46,213,115,.06);border:1px solid rgba(46,213,115,.2);border-radius:7px">
+      <span style="color:var(--green);font-size:18px;line-height:1;flex-shrink:0">✓</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:2px">${data.message}</div>
+        <div style="font-size:11px;color:var(--t3)">${data.operation}${data.clickup_synced === false ? ' · local only (ClickUp not configured)' : data.task_id || data.investor_id ? ' · synced to ClickUp' : ''}</div>
+      </div>
+    </div>`;
+    input.value = '';
+
+    // Update local state so UI reflects immediately without page reload
+    if (data.operation === 'update_stage' && data.investor_name && data.new_stage) {
+      const stageLabel = data.new_stage.toLowerCase();
+      const stageObj   = STAGES.find(s => s.label.toLowerCase() === stageLabel) ||
+                         STAGES.find(s => s.key === stageLabel.replace(/\s+/g,'-'));
+      const inv = INVESTORS.find(i => i.name.toLowerCase().includes(data.investor_name.toLowerCase()));
+      if (inv && stageObj) { inv.stage = stageObj.key; buildKanban(); buildPipelineFunnel(); }
+    } else if (data.operation === 'create_investor' && data.investor_name) {
+      const stageLabel = (data.new_stage || 'Research').toLowerCase();
+      const stageObj   = STAGES.find(s => s.label.toLowerCase() === stageLabel) || STAGES[0];
+      INVESTORS.push({
+        id: data.task_id || 'new-' + Date.now(),
+        name: data.investor_name, firm: data.investor_name,
+        stage: stageObj.key, tier: 2,
+        focus: data.focus || '', notes: ''
+      });
+      buildKanban(); buildPipelineFunnel();
+    }
+  } else {
+    result.innerHTML = `<div style="padding:10px 12px;background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.2);border-radius:7px;font-size:12px;color:var(--red)">${data.message || 'Command failed'}</div>`;
+  }
+}
+
+// ============================================================
+// IMMEDIATE TASKS (War Room — replaces static next steps)
+// ============================================================
+const RESOLVED_KEY = 'eigen_resolved_tasks';
+function getResolved() { try { return JSON.parse(localStorage.getItem(RESOLVED_KEY)) || {}; } catch { return {}; } }
+function resolveTask(key) {
+  const r = getResolved(); r[key] = Date.now();
+  localStorage.setItem(RESOLVED_KEY, JSON.stringify(r));
+  document.getElementById('task-' + key)?.remove();
+  const box = document.getElementById('immediateTasksBox');
+  if (box && !box.querySelector('.task-item'))
+    box.innerHTML = '<div style="font-size:11px;color:var(--green)">All clear — no open tasks.</div>';
+}
+
+async function loadImmediateTasks() {
+  const box = document.getElementById('immediateTasksBox');
+  if (!box) return;
+  const data = await fcFetch('/action-queue');
+  if (!data) { box.innerHTML = '<div style="font-size:11px;color:var(--t3)">Connect API server to load tasks.</div>'; return; }
+  const resolved = getResolved();
+  const all = [...(data.urgent||[]).map(t=>({...t,priority:'urgent'})),
+               ...(data.today||[]).map(t=>({...t,priority:'today'})),
+               ...(data.this_week||[]).map(t=>({...t,priority:'week'}))];
+  const open = all.filter(t => {
+    const key = (t.investor||'') + '|' + (t.action||'');
+    return !resolved[key];
+  });
+  if (!open.length) { box.innerHTML = '<div style="font-size:11px;color:var(--green)">All clear — no open tasks.</div>'; return; }
+  box.innerHTML = open.slice(0, 8).map(t => {
+    const key = ((t.investor||'') + '|' + (t.action||'')).replace(/"/g,'');
+    const dot = t.priority === 'urgent' ? 'dot-red' : t.priority === 'today' ? 'dot-orange' : 'dot-green';
+    return `<div class="action-item task-item" id="task-${CSS.escape(key)}" style="justify-content:space-between">
+      <div style="display:flex;gap:10px;align-items:flex-start;flex:1">
+        <span class="${dot}" style="margin-top:4px;flex-shrink:0"></span>
+        <div class="action-text">
+          <strong>${t.investor||t.title||''}</strong>
+          ${t.action||t.description||''}
+          ${t.stage ? `<div class="action-due">${t.stage}</div>` : ''}
+        </div>
+      </div>
+      <button onclick="resolveTask('${key.replace(/'/g,"\\'")}');event.stopPropagation()"
+        style="flex-shrink:0;margin-left:8px;padding:3px 8px;border-radius:5px;border:1px solid rgba(46,213,115,.3);background:rgba(46,213,115,.07);color:var(--green);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s"
+        onmouseover="this.style.background='rgba(46,213,115,.18)'" onmouseout="this.style.background='rgba(46,213,115,.07)'">✓ Done</button>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// INVESTOR SURFACING (War Room)
+// ============================================================
+async function loadInvestorSurface() {
+  const box = document.getElementById('investorSurfaceBox');
+  if (!box) return;
+  box.innerHTML = '<span class="loading"></span><span style="font-size:11px;color:var(--t3)"> Scanning...</span>';
+  const data = await fcFetch('/news');
+  if (!data?.investor_leads?.length) {
+    box.innerHTML = '<div style="font-size:11px;color:var(--t3)">No new leads identified. Connect API server and check Intel tab.</div>';
+    return;
+  }
+  const leads = [...data.investor_leads].sort((a,b)=>(b.fit_score||0)-(a.fit_score||0)).slice(0,5);
+  box.innerHTML = leads.map(l => {
+    const tc = l.tier==='A' ? 'var(--green)' : l.tier==='B' ? 'var(--orange)' : 'var(--t3)';
+    return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:10px;font-weight:700;color:${tc};flex-shrink:0;margin-top:2px">T${l.tier}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${l.name}</div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.4">${l.fit_reason||l.evidence||''}</div>
+        <div style="font-size:11px;color:var(--accent);margin-top:3px">→ ${l.suggested_approach}</div>
+      </div>
+      ${l.fit_score ? `<span style="font-size:10px;font-weight:800;color:var(--accent2);flex-shrink:0">${l.fit_score}/10</span>` : ''}
+    </div>`;
+  }).join('');
+  // Remove last border
+  const items = box.querySelectorAll('div[style*="border-bottom"]');
+  if (items.length) items[items.length-1].style.borderBottom = 'none';
+}
+
+// ============================================================
 // SETTINGS
 // ============================================================
 document.getElementById('settingsBtn').addEventListener('click', () => {
@@ -1579,6 +1765,7 @@ function init() {
   buildDataRoom();
   buildFaq();
   loadActionQueue();
+  loadImmediateTasks();
 }
 
 init();
