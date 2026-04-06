@@ -235,6 +235,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Di
 .tag.sit{background:rgba(124,109,250,.1);color:var(--accent)}
 hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
 small{font-size:11px;color:var(--t3)}
+
+/* DRAG AND DROP */
+.kanban-card{cursor:grab}
+.kanban-card:active{cursor:grabbing}
+.kanban-card.dragging{opacity:.35;border-style:dashed}
+.kanban-col.drag-over{outline:2px solid var(--accent);outline-offset:-2px;background:rgba(124,109,250,.06)}
 </style>
 </head>
 <body>
@@ -301,74 +307,12 @@ small{font-size:11px;color:var(--t3)}
   <!-- Action Strip -->
   <div class="action-strip">
     <div class="action-col">
-      <div class="action-col-title"><span class="dot-red"></span><span style="color:var(--red)">IMMEDIATE — This Week</span></div>
-      <div class="action-item">
-        <span class="dot-red"></span>
-        <div class="action-text">
-          <strong>Prep for Apr 7: Peter Zhou (Triatomic Capital)</strong>
-          Research Triatomic's portfolio — biotech/diagnostics focus. Lead with Vyloy FDA approval as market catalyst.
-          <div class="action-due">📅 Apr 7 · 16:00 PDT</div>
-        </div>
-      </div>
-      <div class="action-item">
-        <span class="dot-red"></span>
-        <div class="action-text">
-          <strong>Identify Andrew Sundstrom — research before call</strong>
-          Self-listed as "Self" in Calendly. Unknown background. Click Generate Briefing on Calendar tab before the call.
-          <div class="action-due">📅 Apr 7 · 09:00 KST</div>
-        </div>
-      </div>
-      <div class="action-item">
-        <span class="dot-red"></span>
-        <div class="action-text">
-          <strong>Commission IP/FTO Analysis — critical gap</strong>
-          Every serious investor will ask. Not yet commissioned. Budget ~$8-15K. Blocking factor for DD.
-          <div class="action-due">🔴 Blocking — do this week</div>
-        </div>
-      </div>
-      <div class="action-item">
-        <span class="dot-red"></span>
-        <div class="action-text">
-          <strong>Follow up: MSD Capital, Hopp Family, Crockell</strong>
-          All at Partner Mtg stage. No update in >7 days triggers a check-in.
-          <div class="action-due">⏰ Status check overdue</div>
-        </div>
-      </div>
+      <div class="action-col-title"><span class="dot-red"></span><span style="color:var(--red)">IMMEDIATE</span><span id="actionQueueStatus" style="font-size:10px;color:var(--t3);margin-left:auto"></span></div>
+      <div id="immediateActions"><div style="font-size:11px;color:var(--t3)">Loading from pipeline...</div></div>
     </div>
     <div class="action-col">
-      <div class="action-col-title"><span class="dot-orange"></span><span style="color:var(--orange)">THIS WEEK — Before AACR</span></div>
-      <div class="action-item">
-        <span class="dot-orange"></span>
-        <div class="action-text">
-          <strong>Prep MD Anderson / Van Morris KOL meeting (Apr 8)</strong>
-          Clinical validation site opportunity. Frame as de-risking investor story, not just clinical partnership.
-          <div class="action-due">📅 Apr 8 · 07:00 PDT</div>
-        </div>
-      </div>
-      <div class="action-item">
-        <span class="dot-orange"></span>
-        <div class="action-text">
-          <strong>Build AACR networking list (Apr 17–22)</strong>
-          Identify biotech investors, KOLs at conference. Tempus reception Apr 20 (competitive intel). Book 1:1s in advance.
-          <div class="action-due">📅 12 days out — plan now</div>
-        </div>
-      </div>
-      <div class="action-item">
-        <span class="dot-orange"></span>
-        <div class="action-text">
-          <strong>Push Dimension Capital to next stage</strong>
-          Marked "hot / stay-in-touch." Re-engage with a specific ask — what would move them to intro call?
-          <div class="action-due">🔥 Highest-probability stay-in-touch</div>
-        </div>
-      </div>
-      <div class="action-item">
-        <span class="dot-green"></span>
-        <div class="action-text">
-          <strong>Update pitch deck: add regulatory strategy slide</strong>
-          LDT vs CDx PMA pathway. Investors increasingly asking. Keep it to one slide — show you've thought it through.
-          <div class="action-due">📝 Deadline: before next partner mtg</div>
-        </div>
-      </div>
+      <div class="action-col-title"><span class="dot-orange"></span><span style="color:var(--orange)">THIS WEEK</span></div>
+      <div id="thisWeekActions"><div style="font-size:11px;color:var(--t3)">Loading from pipeline...</div></div>
     </div>
   </div>
 
@@ -982,8 +926,10 @@ function buildPipelineFunnel() {
 }
 
 // ============================================================
-// KANBAN
+// KANBAN (with drag-and-drop)
 // ============================================================
+let draggedInvId = null;
+
 function buildKanban() {
   const board = document.getElementById('kanbanBoard');
   board.innerHTML = '';
@@ -992,17 +938,38 @@ function buildKanban() {
   countEl.textContent = `${INVESTORS.length} investors tracked`;
   allCols.forEach(stage => {
     const investors = INVESTORS.filter(i => i.stage === stage.key);
-    if (investors.length === 0) return;
+    // Always render active pipeline stages (drop targets); skip empty outcome columns
+    if (investors.length === 0 && OUTCOMES.includes(stage.key)) return;
     const col = document.createElement('div');
     col.className = 'kanban-col' + (OUTCOMES.includes(stage.key) ? ' outcome-col' : '');
+    col.dataset.stage = stage.key;
     col.innerHTML = `<div class="kanban-col-head" style="background:${stage.color}18;border-left:3px solid ${stage.color}">
       <span class="kanban-col-label" style="color:${stage.color}">${stage.label}</span>
       <span class="kanban-col-count">${investors.length}</span>
     </div>`;
+    // Drop zone
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over'); });
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      if (!draggedInvId) return;
+      const inv = INVESTORS.find(i => i.id === draggedInvId);
+      if (inv && inv.stage !== stage.key) {
+        inv.stage = stage.key;
+        buildKanban();
+        buildPipelineFunnel();
+        showToast(inv.name + ' → ' + stage.label);
+        // Sync to API if available
+        fcFetch('/pipeline/update', { method:'POST', body: JSON.stringify({ task_id: inv.id, investor_name: inv.name, new_status: stage.label }) });
+      }
+      draggedInvId = null;
+    });
     investors.forEach(inv => {
       const card = document.createElement('div');
       card.className = 'kanban-card';
       card.id = 'kcard-' + inv.id;
+      card.draggable = true;
       const tierColor = inv.tier === 1 ? 'var(--red)' : inv.tier === 2 ? 'var(--orange)' : 'var(--t3)';
       card.innerHTML = `<div class="kc-name">${inv.name}</div>
         <div class="kc-firm" style="font-size:10px;color:var(--t3)">${inv.firm}</div>
@@ -1017,7 +984,18 @@ function buildKanban() {
           <button class="btn btn-accent" style="margin-top:8px;font-size:10px" onclick="generateInvestorBriefing('${inv.id}');event.stopPropagation()">🤖 Generate Briefing</button>
           <div id="brief-${inv.id}" style="display:none;margin-top:8px;font-size:11px;color:var(--t2);background:var(--s4);padding:8px;border-radius:5px;line-height:1.5;max-height:200px;overflow-y:auto;white-space:pre-wrap"></div>
         </div>`;
-      card.addEventListener('click', () => {
+      card.addEventListener('dragstart', e => {
+        draggedInvId = inv.id;
+        setTimeout(() => card.classList.add('dragging'), 0);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        draggedInvId = null;
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      });
+      card.addEventListener('click', e => {
+        if (e.defaultPrevented) return;
         card.classList.toggle('expanded');
         document.getElementById('kd-' + inv.id).classList.toggle('open');
       });
@@ -1025,6 +1003,39 @@ function buildKanban() {
     });
     board.appendChild(col);
   });
+}
+
+// ============================================================
+// ACTION QUEUE
+// ============================================================
+async function loadActionQueue() {
+  const urgentEl = document.getElementById('immediateActions');
+  const weekEl   = document.getElementById('thisWeekActions');
+  const statusEl = document.getElementById('actionQueueStatus');
+  const data = await fcFetch('/action-queue');
+  if (!data) {
+    urgentEl.innerHTML = '<div style="font-size:11px;color:var(--t3)">Connect API server to load live actions.</div>';
+    weekEl.innerHTML   = '<div style="font-size:11px;color:var(--t3)">Configure in ⚙ Settings.</div>';
+    return;
+  }
+  if (statusEl) statusEl.textContent = 'Live · ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+
+  function renderItems(items, dotClass) {
+    if (!items?.length) return '<div style="font-size:11px;color:var(--t3)">All clear.</div>';
+    return items.slice(0, 6).map(item => `
+      <div class="action-item">
+        <span class="${dotClass}" style="margin-top:4px;flex-shrink:0"></span>
+        <div class="action-text">
+          <strong>${item.investor || item.title || ''}</strong>
+          ${item.action || item.description || ''}
+          ${item.due ? `<div class="action-due">${item.due}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  urgentEl.innerHTML = renderItems(data.urgent, 'dot-red');
+  const weekItems = [...(data.today || []), ...(data.this_week || [])];
+  weekEl.innerHTML  = renderItems(weekItems, 'dot-orange');
 }
 
 // ============================================================
@@ -1567,6 +1578,7 @@ function init() {
   buildMeetings();
   buildDataRoom();
   buildFaq();
+  loadActionQueue();
 }
 
 init();
